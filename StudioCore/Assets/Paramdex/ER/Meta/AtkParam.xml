@@ -132,6 +132,7 @@
     <isDisableParry IsBool="" />
     <isDisableBothHandsAtkBonus IsBool="" />
     <isInvalidatedByNoDamageInAir IsBool="" />
+	<overwriteAttackElementCorrectId Refs="AttackElementCorrectParam" />
   </Field>
   <Self Row0Dummy="" />
 </PARAMMETA>
