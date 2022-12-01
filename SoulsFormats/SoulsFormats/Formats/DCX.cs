@@ -146,7 +146,18 @@ namespace SoulsFormats
             else if (type == Type.DCP_DFLT)
                 return DecompressDCPDFLT(br);
             else if (type == Type.DCX_EDGE)
-                return DecompressDCXEDGE(br);
+            {
+                long pos = br.Position;
+                try
+                {
+                    return DecompressDCXEDGE(br);
+                }
+                catch (System.NotSupportedException e)
+                {
+                    br.Position = pos;
+                    return DecompressDCXEDGE(br, true);
+                }
+            }
             else if (type == Type.DCX_DFLT_10000_24_9
                 || type == Type.DCX_DFLT_10000_44_9
                 || type == Type.DCX_DFLT_11000_44_8
@@ -243,7 +254,7 @@ namespace SoulsFormats
             return decompressed;
         }
 
-        private static byte[] DecompressDCXEDGE(BinaryReaderEx br)
+        private static byte[] DecompressDCXEDGE(BinaryReaderEx br, bool decompressInvalids = false)
         {
             br.AssertASCII("DCX\0");
             br.AssertInt32(0x10000);
@@ -287,7 +298,7 @@ namespace SoulsFormats
                 throw new InvalidDataException("Unexpected EgdT size in EDGE DCX.");
 
             byte[] decompressed = new byte[uncompressedSize];
-            using (MemoryStream dcmpStream = new MemoryStream(decompressed))
+            using (MemoryStream dcmpStream = decompressInvalids ? new MemoryStream(uncompressedSize) : new MemoryStream(decompressed))
             {
                 for (int i = 0; i < chunkCount; i++)
                 {
@@ -297,7 +308,6 @@ namespace SoulsFormats
                     bool compressed = br.AssertInt32(0, 1) == 1;
 
                     byte[] chunk = br.GetBytes(dcaStart + dcaSize + offset, size);
-
                     if (compressed)
                     {
                         using (MemoryStream cmpStream = new MemoryStream(chunk))
@@ -309,6 +319,7 @@ namespace SoulsFormats
                         dcmpStream.Write(chunk, 0, chunk.Length);
                     }
                 }
+                decompressed = dcmpStream.ToArray();
             }
 
             return decompressed;

@@ -185,49 +185,57 @@ namespace StudioCore.ParamEditor
                 {
                     continue;
                 }
-                FSParam.Param p = FSParam.Param.Read(f.Bytes);
-                if (!_paramdefs.ContainsKey(p.ParamType) && !_patchParamdefs.ContainsKey(p.ParamType))
-                {
-                    continue;
-                }
-                
-                // Try to fixup Elden Ring ChrModelParam for ER 1.06 because many have been saving botched params and
-                // it's an easy fixup
-                if (AssetLocator.Type == GameType.EldenRing &&
-                    p.ParamType == "CHR_MODEL_PARAM_ST" &&
-                    _paramVersion == 10601000)
-                {
-                    p.FixupERChrModelParam();
-                }
-
-                // Lookup the correct paramdef based on the version
-                PARAMDEF def = null;
-                if (_patchParamdefs.ContainsKey(p.ParamType))
-                {
-                    var keys = _patchParamdefs[p.ParamType].Keys.OrderByDescending(e => e);
-                    foreach (var k in keys)
-                    {
-                        if (version >= k)
-                        {
-                            def = _patchParamdefs[p.ParamType][k];
-                            break;
-                        }
-                    }
-                }
-
-                // If no patched paramdef was found for this regulation version, fallback to vanilla defs
-                if (def == null)
-                    def = _paramdefs[p.ParamType];
-
                 try
                 {
-                    p.ApplyParamdef(def);
-                    paramBank.Add(Path.GetFileNameWithoutExtension(f.Name), p);
+                    FSParam.Param p = FSParam.Param.Read(f.Bytes);
+                    if (!_paramdefs.ContainsKey(p.ParamType) && !_patchParamdefs.ContainsKey(p.ParamType))
+                    {
+                        continue;
+                    }
+                    
+                    // Try to fixup Elden Ring ChrModelParam for ER 1.06 because many have been saving botched params and
+                    // it's an easy fixup
+                    if (AssetLocator.Type == GameType.EldenRing &&
+                        p.ParamType == "CHR_MODEL_PARAM_ST" &&
+                        _paramVersion == 10601000)
+                    {
+                        p.FixupERChrModelParam();
+                    }
+
+                    // Lookup the correct paramdef based on the version
+                    PARAMDEF def = null;
+                    if (_patchParamdefs.ContainsKey(p.ParamType))
+                    {
+                        var keys = _patchParamdefs[p.ParamType].Keys.OrderByDescending(e => e);
+                        foreach (var k in keys)
+                        {
+                            if (version >= k)
+                            {
+                                def = _patchParamdefs[p.ParamType][k];
+                                break;
+                            }
+                        }
+                    }
+
+                    // If no patched paramdef was found for this regulation version, fallback to vanilla defs
+                    if (def == null)
+                        def = _paramdefs[p.ParamType];
+
+                    try
+                    {
+                        p.ApplyParamdef(def);
+                        paramBank.Add(Path.GetFileNameWithoutExtension(f.Name), p);
+                    }
+                    catch(Exception e)
+                    {
+                        var name = f.Name.Split("\\").Last();
+                        TaskManager.warningList.TryAdd($"{name} DefFail",$"Could not apply ParamDef for {name}");
+                    }
                 }
                 catch(Exception e)
                 {
-                    var name = f.Name.Split("\\").Last();
-                    TaskManager.warningList.TryAdd($"{name} DefFail",$"Could not apply ParamDef for {name}");
+                var name = f.Name.Split("\\").Last();
+                    TaskManager.warningList.TryAdd($"{name} LoadFail",$"Could not load Param {name}");
                 }
             }
         }
