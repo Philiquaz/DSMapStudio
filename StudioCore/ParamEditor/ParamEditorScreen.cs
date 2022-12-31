@@ -368,7 +368,7 @@ namespace StudioCore.ParamEditor
                     }
                     ImGui.EndMenu();
                 }
-                if (ImGui.BeginMenu("Import CSV", _activeView._selection.paramSelectionExists()))
+                if (ImGui.BeginMenu("Import CSV", _activeView._selection.activeParamExists()))
                 {
                     DelimiterInputText();
                     if (ImGui.MenuItem("All", KeyBindings.Current.Param_ImportCSV.HintText))
@@ -384,7 +384,7 @@ namespace StudioCore.ParamEditor
                         }
                         ImGui.EndMenu();
                     }
-                    if (ImGui.BeginMenu("From file...", _activeView._selection.paramSelectionExists()))
+                    if (ImGui.BeginMenu("From file...", _activeView._selection.activeParamExists()))
                     {
                         if (ImGui.MenuItem("All"))
                         {
@@ -450,17 +450,45 @@ namespace StudioCore.ParamEditor
                     }
                     ImGui.EndMenu();
                 }
-                if (ImGui.MenuItem("Sort rows by ID", _activeView._selection.paramSelectionExists()))
+                if (ImGui.MenuItem("Sort rows by ID", _activeView._selection.activeParamExists()))
                 {
                     EditorActionManager.ExecuteAction(MassParamEditOther.SortRows(ParamBank.PrimaryBank, _activeView._selection.getActiveParam()));
                 }
-                if (ImGui.MenuItem("Import Row Names", "", false, ParamBank.PrimaryBank.Params != null))
+                if (ImGui.BeginMenu("Import Row Names"))
                 {
-                    try {
-                        EditorActionManager.ExecuteAction(ParamBank.PrimaryBank.LoadParamDefaultNames());
-                    } catch {
+                    void ImportRowNames(bool currentParamOnly)
+                    {
+                        const string importRowQuestion = $"Would you like to replace row names with default names defined within DSMapStudio?\n\nSelect \"Yes\" to replace all names, \"No\" to only replace empty names, \"Cancel\" to abort.";
+                        string currentParam = currentParamOnly ? _activeView._selection.getActiveParam() : null;
+                        DialogResult question = MessageBox.Show(importRowQuestion, "Replace all rows?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                        switch (question)
+                        {
+                            case DialogResult.Yes:
+                                EditorActionManager.ExecuteAction(ParamBank.PrimaryBank.LoadParamDefaultNames(currentParam));
+                                break;
+                            case DialogResult.No:
+                                EditorActionManager.ExecuteAction(ParamBank.PrimaryBank.LoadParamDefaultNames(currentParam, true));
+                                break;
+                        }
                     }
+
+                    if (ImGui.MenuItem("All", "", false, ParamBank.PrimaryBank.Params != null))
+                    {
+                        try {
+                            ImportRowNames(false);
+                        } catch {
+                        }
+                    }
+                    if (ImGui.MenuItem("Current Param", "", false, ParamBank.PrimaryBank.Params != null && _activeView._selection.activeParamExists()))
+                    {
+                        try {
+                            ImportRowNames(true);
+                        } catch {
+                        }
+                    }
+                    ImGui.EndMenu();
                 }
+
                 if (ImGui.MenuItem("Trim hidden newlines in names", "", false, ParamBank.PrimaryBank.Params != null))
                 {
                     try {
@@ -859,7 +887,7 @@ namespace StudioCore.ParamEditor
                 {
                     ParamRedo();
                 }
-                if (!ImGui.IsAnyItemActive() && _activeView._selection.paramSelectionExists() && InputTracker.GetKeyDown(KeyBindings.Current.Param_SelectAll))
+                if (!ImGui.IsAnyItemActive() && _activeView._selection.activeParamExists() && InputTracker.GetKeyDown(KeyBindings.Current.Param_SelectAll))
                 {
                     ParamBank.ClipboardParam = _activeView._selection.getActiveParam();
                     foreach (Param.Row row in CacheBank.GetCached(this, (_activeView._viewIndex, _activeView._selection.getActiveParam()), () =>RowSearchEngine.rse.Search((ParamBank.PrimaryBank, ParamBank.PrimaryBank.Params[_activeView._selection.getActiveParam()]), _activeView._selection.getCurrentRowSearchString(), true, true)))
@@ -1229,7 +1257,7 @@ namespace StudioCore.ParamEditor
         private string _activeParam = null;
         private Dictionary<string, ParamEditorParamSelectionState> _paramStates = new Dictionary<string, ParamEditorParamSelectionState>();
 
-        public bool paramSelectionExists()
+        public bool activeParamExists()
         {
             return _activeParam != null;
         }
@@ -1524,7 +1552,7 @@ namespace StudioCore.ParamEditor
             ImGui.EndChild();
             ImGui.NextColumn();
             string activeParam = _selection.getActiveParam();
-            if (!_selection.paramSelectionExists())
+            if (!_selection.activeParamExists())
             {
                 ImGui.BeginChild("rowsNONE");
                 ImGui.Text("Select a param to see rows");
