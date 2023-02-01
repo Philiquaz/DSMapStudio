@@ -509,6 +509,11 @@ namespace StudioCore.ParamEditor
                     RemoveView(_activeView);
                 }
                 ImGui.Separator();
+                if (ImGui.MenuItem("Go back...", KeyBindings.Current.Param_GotoBack.HintText, false, _activeView._selection.hasHistory()))
+                {
+                    EditorCommandQueue.AddCommand($@"param/back");
+                }
+                ImGui.Separator();
                 if (ImGui.MenuItem("Check all params for edits", null, false, !ParamBank.PrimaryBank.IsLoadingParams && !ParamBank.VanillaBank.IsLoadingParams))
                 {
                     ParamBank.PrimaryBank.RefreshParamDiffCaches();
@@ -887,6 +892,10 @@ namespace StudioCore.ParamEditor
                 {
                     ParamRedo();
                 }
+                if (_activeView._selection.hasHistory() && InputTracker.GetKeyDown(KeyBindings.Current.Param_GotoBack))
+                {
+                    EditorCommandQueue.AddCommand($@"param/back");
+                }
                 if (!ImGui.IsAnyItemActive() && _activeView._selection.activeParamExists() && InputTracker.GetKeyDown(KeyBindings.Current.Param_SelectAll))
                 {
                     ParamBank.ClipboardParam = _activeView._selection.getActiveParam();
@@ -990,6 +999,10 @@ namespace StudioCore.ParamEditor
                             ParamBank.PrimaryBank.RefreshParamRowVanillaDiff(_activeView._selection.getActiveRow(), _activeView._selection.getActiveParam());
 
                     }
+                }
+                else if (initcmd[0] == "back")
+                {
+                    _activeView._selection.popHistory();
                 }
                 else if (initcmd[0] == "search")
                 {
@@ -1255,7 +1268,46 @@ namespace StudioCore.ParamEditor
         private static string _globalRowSearchString = "";
         private static string _globalPropSearchString = "";
         private string _activeParam = null;
+
+        List<(string, Param.Row)> pastStack = new List<(string, Param.Row)>();
         private Dictionary<string, ParamEditorParamSelectionState> _paramStates = new Dictionary<string, ParamEditorParamSelectionState>();
+
+
+        private void pushHistory(string newParam, Param.Row newRow)
+        {
+            if (pastStack.Count > 0)
+            {
+                var prev = pastStack[pastStack.Count - 1];
+                if (prev.Item1 == newParam && prev.Item2 == null)
+                    pastStack[pastStack.Count - 1] = (prev.Item1, newRow);
+                prev = pastStack[pastStack.Count - 1];
+                if (prev.Item1 == newParam && prev.Item2 == newRow)
+                    return;
+            }
+            if (_activeParam != null)
+                pastStack.Add((_activeParam, _paramStates[_activeParam].activeRow));
+            if (pastStack.Count >= 6)
+                pastStack.RemoveAt(0);
+        }
+        public void popHistory()
+        {
+            if (pastStack.Count > 0)
+            {
+                var past = pastStack[pastStack.Count - 1];
+                pastStack.RemoveAt(pastStack.Count - 1);
+                if (past.Item2 == null && pastStack.Count > 0)
+                {
+                    past = pastStack[pastStack.Count - 1];
+                    pastStack.RemoveAt(pastStack.Count - 1);
+                }
+                setActiveParam(past.Item1, true);
+                SetActiveRow(past.Item2, true, true);
+            }
+        }
+        public bool hasHistory()
+        {
+            return pastStack.Count > 0;
+        }
 
         public bool activeParamExists()
         {
@@ -1265,8 +1317,10 @@ namespace StudioCore.ParamEditor
         {
             return _activeParam;
         }
-        public void setActiveParam(string param)
+        public void setActiveParam(string param, bool isHistory = false)
         {
+            if (!isHistory)
+                pushHistory(param, null);
             _activeParam = param;
             if (!_paramStates.ContainsKey(_activeParam))
                 _paramStates.Add(_activeParam, new ParamEditorParamSelectionState());
@@ -1299,11 +1353,13 @@ namespace StudioCore.ParamEditor
                 return null;
             return _paramStates[_activeParam].compareRow;
         }
-        public void SetActiveRow(Param.Row row, bool clearSelection)
+        public void SetActiveRow(Param.Row row, bool clearSelection, bool isHistory = false)
         {
             if (_activeParam != null)
             {
                 ParamEditorParamSelectionState s = _paramStates[_activeParam];
+                if (!isHistory)
+                    pushHistory(_activeParam, s.activeRow);
                 s.activeRow = row;
                 s.selectionRows.Clear();
                 s.selectionRows.Add(row);
