@@ -295,6 +295,8 @@
 3971 Gold-Pickled Fowl Foot
 4100 (HKS) JumpLevel 0 (Fat Roll)
 4101 (HKS) Sanguine Noble - JumpLevel 0 (Fat Roll)
+4201 Golden Leaves Weather (Bonus Runes)
+5250 Enemy: Golden Eyes (Bonus Runes)
 5300 No Stag
 5301 NPC: Damage Level Override
 5302 NPC: Damage Level Override
