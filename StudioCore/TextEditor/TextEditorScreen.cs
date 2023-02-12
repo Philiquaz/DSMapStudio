@@ -125,11 +125,14 @@ namespace StudioCore.TextEditor
             {
                 if (ImGui.MenuItem("Import Files", KeyBindings.Current.TextFMG_Import.HintText))
                 {
-                    if (FMGBank.ImportFMGs())
+                    FMGBank.ImportFMGs((success) => 
                     {
-                        ClearTextEditorCache();
-                        ResetActionManager();
-                    }
+                        if (success)
+                        {
+                            ClearTextEditorCache();
+                            ResetActionManager();
+                        }
+                    });
                 }
                 if (ImGui.MenuItem("Export All Text", KeyBindings.Current.TextFMG_ExportAll.HintText))
                 {
@@ -457,11 +460,15 @@ namespace StudioCore.TextEditor
                 }
                 if (InputTracker.GetKeyDown(KeyBindings.Current.TextFMG_Import))
                 {
-                    if (FMGBank.ImportFMGs())
+                    FMGBank.ImportFMGs((success) => 
                     {
-                        ClearTextEditorCache();
-                        ResetActionManager();
-                    }
+                        if (success)
+                        {
+                            ClearTextEditorCache();
+                            ResetActionManager();
+                        }
+                    });
+                    
                 }
                 if (InputTracker.GetKeyDown(KeyBindings.Current.TextFMG_ExportAll))
                 {

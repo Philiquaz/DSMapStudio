@@ -1287,122 +1287,129 @@ namespace StudioCore.TextEditor
             return json;
         }
 
-        public static bool ExportFMGs()
+        public static void ExportFMGs()
         {
             Forms.FolderBrowserDialog folderDialog = new();
             folderDialog.UseDescriptionForTitle = true;
             folderDialog.Description = "Choose Export Folder";
-            if (folderDialog.ShowDialog() != Forms.DialogResult.OK)
+            folderDialog.ShowDialog((result) =>
             {
-                return false;
-            }
-
-            var path = folderDialog.SelectedPath;
-            int filecount = 0;
-            if (AssetLocator.Type == GameType.DarkSoulsIISOTFS)
-            {
-                Directory.CreateDirectory(path);
-
-                foreach (var info in _fmgInfoBank)
+                if (result != Forms.DialogResult.OK)
+                    return;
+                var path = folderDialog.SelectedPath;
+                int filecount = 0;
+                if (AssetLocator.Type == GameType.DarkSoulsIISOTFS)
                 {
-                    var fmgPair = new JsonFMG(info.FmgID, info.Fmg);
-                    var json = JsonConvert.SerializeObject(fmgPair, Formatting.None);
-                    json = FormatJson(json);
+                    Directory.CreateDirectory(path);
 
-                    var fileName = info.Name;
-                    if (CFG.Current.FMG_ShowOriginalNames)
-                        fileName = info.FileName;
+                    foreach (var info in _fmgInfoBank)
+                    {
+                        var fmgPair = new JsonFMG(info.FmgID, info.Fmg);
+                        var json = JsonConvert.SerializeObject(fmgPair, Formatting.None);
+                        json = FormatJson(json);
 
-                    File.WriteAllText($@"{path}\{fileName}.fmg.json", json);
+                        var fileName = info.Name;
+                        if (CFG.Current.FMG_ShowOriginalNames)
+                            fileName = info.FileName;
 
-                    filecount++;
+                        File.WriteAllText($@"{path}\{fileName}.fmg.json", json);
+
+                        filecount++;
+                    }
                 }
-            }
-            else
-            {
-                var itemPath = $@"{path}\Item Text";
-                var menuPath = $@"{path}\Menu Text";
-                Directory.CreateDirectory(itemPath);
-                Directory.CreateDirectory(menuPath);
-                foreach (var info in _fmgInfoBank)
+                else
                 {
-                    if (info.UICategory == FmgUICategory.Item)
+                    var itemPath = $@"{path}\Item Text";
+                    var menuPath = $@"{path}\Menu Text";
+                    Directory.CreateDirectory(itemPath);
+                    Directory.CreateDirectory(menuPath);
+                    foreach (var info in _fmgInfoBank)
                     {
-                        path = itemPath;
+                        if (info.UICategory == FmgUICategory.Item)
+                        {
+                            path = itemPath;
+                        }
+                        else if (info.UICategory == FmgUICategory.Menu)
+                        {
+                            path = menuPath;
+                        }
+                        var fmgPair = new JsonFMG(info.FmgID, info.Fmg);
+                        var json = JsonConvert.SerializeObject(fmgPair, Formatting.None);
+                        json = FormatJson(json);
+
+                        var fileName = info.Name;
+                        if (CFG.Current.FMG_ShowOriginalNames)
+                            fileName = info.FileName;
+
+                        File.WriteAllText($@"{path}\{fileName}.fmg.json", json);
+
+                        filecount++;
                     }
-                    else if (info.UICategory == FmgUICategory.Menu)
-                    {
-                        path = menuPath;
-                    }
-                    var fmgPair = new JsonFMG(info.FmgID, info.Fmg);
-                    var json = JsonConvert.SerializeObject(fmgPair, Formatting.None);
-                    json = FormatJson(json);
-
-                    var fileName = info.Name;
-                    if (CFG.Current.FMG_ShowOriginalNames)
-                        fileName = info.FileName;
-
-                    File.WriteAllText($@"{path}\{fileName}.fmg.json", json);
-
-                    filecount++;
                 }
-            }
-            Forms.MessageBox.Show($"Exported {filecount} text files", "Finished", Forms.MessageBoxButtons.OK);
-            return true;
+                Forms.MessageBox.Show($"Exported {filecount} text files", "Finished", Forms.MessageBoxButtons.OK);
+            });
         }
 
-        public static bool ImportFMGs()
+        public static void ImportFMGs(Action<bool> callback)
         {
             Forms.OpenFileDialog fileDialog = new();
             fileDialog.Title = "Choose Files to Import";
             fileDialog.Filter = "Exported FMGs|*.fmg.json|All files|*.*";
             fileDialog.Multiselect = true;
-            if (fileDialog.ShowDialog() != Forms.DialogResult.OK)
+            fileDialog.ShowDialog((result) =>
             {
-                return false;
-            }
-            var files = fileDialog.FileNames;
-
-            if (files.Length == 0)
-            {
-                return false;
-            }
-
-            int filecount = 0;
-            foreach (var filePath in files)
-            {
-                try
+                if (result != Forms.DialogResult.OK)
                 {
-                    var file = File.ReadAllText(filePath);
-                    var json = JsonConvert.DeserializeObject<JsonFMG>(@file);
-                    bool success = false;
-                    foreach (var info in _fmgInfoBank)
+                    callback(false);
+                    return;
+                }
+                var files = fileDialog.FileNames;
+
+                if (files.Length == 0)
+                {
+                    callback(false);
+                    return;
+                }
+
+                int filecount = 0;
+                foreach (var filePath in files)
+                {
+                    try
                     {
-                        if (info.FmgID == json.FmgID)
+                        var file = File.ReadAllText(filePath);
+                        var json = JsonConvert.DeserializeObject<JsonFMG>(@file);
+                        bool success = false;
+                        foreach (var info in _fmgInfoBank)
                         {
-                            info.Fmg = json.Fmg;
-                            success = true;
-                            filecount++;
-                            break;
+                            if (info.FmgID == json.FmgID)
+                            {
+                                info.Fmg = json.Fmg;
+                                success = true;
+                                filecount++;
+                                break;
+                            }
+                        }
+                        if (!success)
+                        {
+                            Forms.MessageBox.Show($"Couldn't locate FMG using FMG ID `{json.FmgID}`", "Import Error", Forms.MessageBoxButtons.OK);
                         }
                     }
-                    if (!success)
+                    catch (JsonReaderException e)
                     {
-                        Forms.MessageBox.Show($"Couldn't locate FMG using FMG ID `{json.FmgID}`", "Import Error", Forms.MessageBoxButtons.OK);
+                        Forms.MessageBox.Show($"{e.Message}\n\nCouldn't import '{filePath}'", "Import Error", Forms.MessageBoxButtons.OK);
                     }
                 }
-                catch (JsonReaderException e)
+
+                if (filecount == 0)
                 {
-                    Forms.MessageBox.Show($"{e.Message}\n\nCouldn't import '{filePath}'", "Import Error", Forms.MessageBoxButtons.OK);
+                    callback(false);
+                    return;
                 }
-            }
 
-            if (filecount == 0)
-                return false;
-
-            HandleDuplicateEntries();
-            Forms.MessageBox.Show($"Imported {filecount} text files", "Finished", Forms.MessageBoxButtons.OK);
-            return true;
+                HandleDuplicateEntries();
+                Forms.MessageBox.Show($"Imported {filecount} text files", "Finished", Forms.MessageBoxButtons.OK);
+                callback(true);
+            });
         }
 
         private static void SaveFMGsDS2()

@@ -494,9 +494,9 @@ namespace StudioCore
                 Filter = "Text file (*.txt) |*.TXT",
                 ValidateNames = true,
             };
-
-            if (browseDlg.ShowDialog() == Forms.DialogResult.OK)
-            {
+            browseDlg.ShowDialog((result) => {
+                if (result != Forms.DialogResult.OK)
+                    return;
                 using (var file = new StreamWriter(browseDlg.FileName))
                 {
                     foreach (var mat in Resource.FlverResource.MaterialLayouts)
@@ -509,7 +509,7 @@ namespace StudioCore
                         file.WriteLine();
                     }
                 }
-            }
+            });
         }
 
         private bool GameNotUnpackedWarning(GameType gameType)
@@ -528,65 +528,18 @@ namespace StudioCore
             }
         }
 
-        private bool AttemptLoadProject(Editor.ProjectSettings settings, string filename, bool updateRecents = true, NewProjectOptions options = null)
+        private void AttemptLoadProject(Editor.ProjectSettings settings, string filename, bool updateRecents = true, NewProjectOptions options = null)
         {
-            bool success = true;
-            try
+            Action<bool> onSuccess = (success) => 
             {
-                // Check if game exe exists
-                if (!Directory.Exists(settings.GameRoot))
+                try
                 {
-                    success = false;
-                    Forms.MessageBox.Show($@"Could not find game data directory for {settings.GameType}. Please select the game executable.", "Error",
-                        Forms.MessageBoxButtons.OK,
-                        Forms.MessageBoxIcon.None);
-
-                    var rbrowseDlg = new Forms.OpenFileDialog()
-                    {
-                        Filter = AssetLocator.GameExecutatbleFilter,
-                        ValidateNames = true,
-                        CheckFileExists = true,
-                        CheckPathExists = true,
-                        //ShowReadOnly = true,
-                    };
-
-                    var gametype = GameType.Undefined;
-                    while (gametype != settings.GameType)
-                    {
-                        if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
-                        {
-                            settings.GameRoot = rbrowseDlg.FileName;
-                            gametype = _assetLocator.GetGameTypeForExePath(settings.GameRoot);
-                            if (gametype != settings.GameType)
-                            {
-                                Forms.MessageBox.Show($@"Selected executable was not for {settings.GameType}. Please select the correct game executable.", "Error",
-                                    Forms.MessageBoxButtons.OK,
-                                    Forms.MessageBoxIcon.None);
-                            }
-                            else
-                            {
-                                success = true;
-                                settings.GameRoot = Path.GetDirectoryName(settings.GameRoot);
-                                if (settings.GameType == GameType.Bloodborne)
-                                {
-                                    settings.GameRoot = settings.GameRoot + @"\dvdroot_ps4";
-                                }
-                                settings.Serialize(filename);
-                            }
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                if (success)
-                {
+                    if (!success)
+                        return;
                     if (!_assetLocator.CheckFilesExpanded(settings.GameRoot, settings.GameType))
                     {
                         if (!GameNotUnpackedWarning(settings.GameType))
-                            return false;
+                            return;
                     }
                     if ((settings.GameType == GameType.Sekiro || settings.GameType == GameType.EldenRing) && !File.Exists(Path.Join(Path.GetFullPath("."), "oo2core_6_win64.dll")))
                     {
@@ -595,7 +548,7 @@ namespace StudioCore
                             Forms.MessageBox.Show($"Could not find file \"oo2core_6_win64.dll\" in \"{settings.GameRoot}\", which should be included by default.\n\nTry reinstalling the game.", "Error",
                                 Forms.MessageBoxButtons.OK,
                                 Forms.MessageBoxIcon.None);
-                            return false;
+                            return;
                         }
                         File.Copy(Path.Join(settings.GameRoot, "oo2core_6_win64.dll"), Path.Join(Path.GetFullPath("."), "oo2core_6_win64.dll"));
                     }
@@ -617,6 +570,70 @@ namespace StudioCore
                         }
                     }
                 }
+                catch
+                {
+                    // Error loading project, clear recent project to let the user launch the program next time without issue.
+                    CFG.Current.LastProjectFile = "";
+                    CFG.Save();
+                    throw;
+                }
+            };
+            try
+            {
+                bool success = true;
+                // Check if game exe exists
+                if (!Directory.Exists(settings.GameRoot))
+                {
+                    success = false;
+                    Forms.MessageBox.Show($@"Could not find game data directory for {settings.GameType}. Please select the game executable.", "Error",
+                        Forms.MessageBoxButtons.OK,
+                        Forms.MessageBoxIcon.None);
+
+                    var rbrowseDlg = new Forms.OpenFileDialog()
+                    {
+                        Filter = AssetLocator.GameExecutatbleFilter,
+                        ValidateNames = true,
+                        CheckFileExists = true,
+                        CheckPathExists = true,
+                        //ShowReadOnly = true,
+                    };
+
+                    var gametype = GameType.Undefined;
+                    rbrowseDlg.ShowDialog((result) => {
+                        try
+                        {
+                            if (result != Forms.DialogResult.OK)
+                                return;
+                            settings.GameRoot = rbrowseDlg.FileName;
+                            gametype = _assetLocator.GetGameTypeForExePath(settings.GameRoot);
+                            if (gametype != settings.GameType)
+                            {
+                                Forms.MessageBox.Show($@"Selected executable was not for {settings.GameType}. Please select the correct game executable.", "Error",
+                                    Forms.MessageBoxButtons.OK,
+                                    Forms.MessageBoxIcon.None);
+                                // no longer asks repeatedly
+                            }
+                            else
+                            {
+                                settings.GameRoot = Path.GetDirectoryName(settings.GameRoot);
+                                if (settings.GameType == GameType.Bloodborne)
+                                {
+                                    settings.GameRoot = settings.GameRoot + @"\dvdroot_ps4";
+                                }
+                                settings.Serialize(filename);
+                                onSuccess(true);
+                            }
+                        }
+                        catch
+                        {
+                            // Error loading project, clear recent project to let the user launch the program next time without issue.
+                            CFG.Current.LastProjectFile = "";
+                            CFG.Save();
+                            throw;
+                        }
+                    });
+                }
+                onSuccess(success);
             }
             catch
             {
@@ -625,7 +642,6 @@ namespace StudioCore
                 CFG.Save();
                 throw;
             }
-            return success;
         }
 
         //Unhappy with this being here
@@ -757,16 +773,16 @@ namespace StudioCore
                             CheckFileExists = true,
                             CheckPathExists = true,
                         };
-
-                        if (browseDlg.ShowDialog() == Forms.DialogResult.OK)
-                        {
-                            var settings = Editor.ProjectSettings.Deserialize(browseDlg.FileName);
-                            AttemptLoadProject(settings, browseDlg.FileName);
-                        }
+                        browseDlg.ShowDialog((result) => {
+                            if (result == Forms.DialogResult.OK)
+                            {
+                                var settings = Editor.ProjectSettings.Deserialize(browseDlg.FileName);
+                                AttemptLoadProject(settings, browseDlg.FileName);
+                            }
+                        });
                     }
                     if (ImGui.BeginMenu("Recent Projects", Editor.TaskManager.GetLiveThreads().Count == 0 && CFG.Current.RecentProjects.Count > 0))
                     {
-                        CFG.RecentProject recent = null;
                         foreach (var p in CFG.Current.RecentProjects)
                         {
                             if (ImGui.MenuItem($@"{p.GameType.ToString()}:{p.Name}"))
@@ -774,18 +790,9 @@ namespace StudioCore
                                 if (File.Exists(p.ProjectFile))
                                 {
                                     var settings = Editor.ProjectSettings.Deserialize(p.ProjectFile);
-                                    if (AttemptLoadProject(settings, p.ProjectFile, false))
-                                    {
-                                        recent = p;
-                                    }
+                                    AttemptLoadProject(settings, p.ProjectFile, false);
                                 }
                             }
-                        }
-                        if (recent != null)
-                        {
-                            CFG.Current.RecentProjects.Remove(recent);
-                            CFG.Current.RecentProjects.Insert(0, recent);
-                            CFG.Current.LastProjectFile = recent.ProjectFile;
                         }
                         ImGui.EndMenu();
                     }
@@ -1085,11 +1092,13 @@ namespace StudioCore
                 if (ImGui.Button($@"{ForkAwesome.FileO}"))
                 {
                     var browseDlg = new Forms.FolderBrowserDialog();
-
-                    if (browseDlg.ShowDialog() == Forms.DialogResult.OK)
+                    browseDlg.ShowDialog((result) => 
                     {
-                        _newProjectOptions.directory = browseDlg.SelectedPath;
-                    }
+                        if (result == Forms.DialogResult.OK)
+                        {
+                            _newProjectOptions.directory = browseDlg.SelectedPath;
+                        }
+                    });
                 }
 
                 ImGui.AlignTextToFramePadding();
@@ -1116,12 +1125,13 @@ namespace StudioCore
                         CheckPathExists = true,
                         //ShowReadOnly = true,
                     };
-
-                    if (browseDlg.ShowDialog() == Forms.DialogResult.OK)
-                    {
-                        _newProjectOptions.settings.GameRoot = browseDlg.FileName;
-                        _newProjectOptions.settings.GameType = _assetLocator.GetGameTypeForExePath(_newProjectOptions.settings.GameRoot);
-                    }
+                    browseDlg.ShowDialog((result) => {
+                        if (result == Forms.DialogResult.OK)
+                        {
+                            _newProjectOptions.settings.GameRoot = browseDlg.FileName;
+                            _newProjectOptions.settings.GameType = _assetLocator.GetGameTypeForExePath(_newProjectOptions.settings.GameRoot);
+                        }
+                    });
                 }
                 ImGui.PopID();
                 ImGui.Text($@"Detected Game:      {_newProjectOptions.settings.GameType.ToString()}");

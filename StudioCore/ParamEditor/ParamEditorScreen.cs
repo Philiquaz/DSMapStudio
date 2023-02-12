@@ -337,8 +337,10 @@ namespace StudioCore.ParamEditor
                                 ValidateNames = true,
                                 CheckPathExists = true
                             };
-                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
-                                TryWriteFile(rbrowseDlg.FileName, MassParamEditCSV.GenerateCSV(_activeView._selection.getSelectedRows(), ParamBank.PrimaryBank.Params[_activeView._selection.getActiveParam()], CFG.Current.Param_Export_Delimiter[0]));
+                            rbrowseDlg.ShowDialog((result) => {
+                                if (result == Forms.DialogResult.OK)
+                                    TryWriteFile(rbrowseDlg.FileName, MassParamEditCSV.GenerateCSV(_activeView._selection.getSelectedRows(), ParamBank.PrimaryBank.Params[_activeView._selection.getActiveParam()], CFG.Current.Param_Export_Delimiter[0]));
+                            });
                         }
                         if (ImGui.MenuItem("Name"))
                         {
@@ -349,8 +351,10 @@ namespace StudioCore.ParamEditor
                                 ValidateNames = true,
                                 CheckPathExists = true
                             };
-                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
-                                TryWriteFile(rbrowseDlg.FileName, MassParamEditCSV.GenerateSingleCSV(_activeView._selection.getSelectedRows(), ParamBank.PrimaryBank.Params[_activeView._selection.getActiveParam()], "Name", CFG.Current.Param_Export_Delimiter[0]));
+                            rbrowseDlg.ShowDialog((result) => {
+                                if (result == Forms.DialogResult.OK)
+                                    TryWriteFile(rbrowseDlg.FileName, MassParamEditCSV.GenerateSingleCSV(_activeView._selection.getSelectedRows(), ParamBank.PrimaryBank.Params[_activeView._selection.getActiveParam()], "Name", CFG.Current.Param_Export_Delimiter[0]));
+                            });
                         }
                         if (ImGui.BeginMenu("Field"))
                         {
@@ -365,8 +369,10 @@ namespace StudioCore.ParamEditor
                                         ValidateNames = true,
                                         CheckPathExists = true
                                     };
-                                    if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
+                                    rbrowseDlg.ShowDialog((result) => {
+                                    if (result == Forms.DialogResult.OK)
                                         TryWriteFile(rbrowseDlg.FileName, MassParamEditCSV.GenerateSingleCSV(_activeView._selection.getSelectedRows(), ParamBank.PrimaryBank.Params[_activeView._selection.getActiveParam()], field.InternalName, CFG.Current.Param_Export_Delimiter[0]));
+                                    });
                                 }
                             }
                             ImGui.EndMenu();
@@ -401,18 +407,21 @@ namespace StudioCore.ParamEditor
                                 ValidateNames = true,
                                 CheckFileExists = true
                             };
-                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
+                            rbrowseDlg.ShowDialog((result) => 
                             {
-                                string csv = TryReadFile(rbrowseDlg.FileName);
-                                if (csv != null)
+                                if (result == Forms.DialogResult.OK)
                                 {
-                                    MassEditResult r = MassParamEditCSV.PerformMassEdit(ParamBank.PrimaryBank, csv, EditorActionManager, _activeView._selection.getActiveParam(), false, false, CFG.Current.Param_Export_Delimiter[0]);
-                                    if (r.Type == MassEditResultType.SUCCESS)
-                                        TaskManager.Run("PB:RefreshDirtyCache", false, true, true, () => ParamBank.PrimaryBank.RefreshParamDiffCaches());
-                                    else
-                                        Forms.MessageBox.Show(r.Information, "Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.None);
+                                    string csv = TryReadFile(rbrowseDlg.FileName);
+                                    if (csv != null)
+                                    {
+                                        MassEditResult r = MassParamEditCSV.PerformMassEdit(ParamBank.PrimaryBank, csv, EditorActionManager, _activeView._selection.getActiveParam(), false, false, CFG.Current.Param_Export_Delimiter[0]);
+                                        if (r.Type == MassEditResultType.SUCCESS)
+                                            TaskManager.Run("PB:RefreshDirtyCache", false, true, true, () => ParamBank.PrimaryBank.RefreshParamDiffCaches());
+                                        else
+                                            Forms.MessageBox.Show(r.Information, "Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.None);
+                                    }
                                 }
-                            }
+                            });
                         }
                         if (ImGui.MenuItem("Name"))
                         {
@@ -422,19 +431,22 @@ namespace StudioCore.ParamEditor
                                 ValidateNames = true,
                                 CheckFileExists = true
                             };
-                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
-                            {
-                                string csv = TryReadFile(rbrowseDlg.FileName);
-                                if (csv != null)
+                            rbrowseDlg.ShowDialog((result) => {
+                                if (result == Forms.DialogResult.OK)
                                 {
-                                    (MassEditResult r, CompoundAction a) = MassParamEditCSV.PerformSingleMassEdit(ParamBank.PrimaryBank, csv, _activeView._selection.getActiveParam(), "Name", CFG.Current.Param_Export_Delimiter[0], false);
-                                    if (r.Type == MassEditResultType.SUCCESS && a != null)
-                                        EditorActionManager.ExecuteAction(a);
-                                    else
-                                        Forms.MessageBox.Show(r.Information, "Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.None);
-                                    TaskManager.Run("PB:RefreshDirtyCache", false, true, true, () => ParamBank.PrimaryBank.RefreshParamDiffCaches());
+                                    string csv = TryReadFile(rbrowseDlg.FileName);
+                                    if (csv != null)
+                                    {
+                                        (MassEditResult r, CompoundAction a) = MassParamEditCSV.PerformSingleMassEdit(ParamBank.PrimaryBank, csv, _activeView._selection.getActiveParam(), "Name", CFG.Current.Param_Export_Delimiter[0], false);
+                                        if (r.Type == MassEditResultType.SUCCESS && a != null)
+                                            EditorActionManager.ExecuteAction(a);
+                                        else
+                                            Forms.MessageBox.Show(r.Information, "Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.None);
+                                        TaskManager.Run("PB:RefreshDirtyCache", false, true, true, () => ParamBank.PrimaryBank.RefreshParamDiffCaches());
+                                    }
                                 }
-                            }
+                            });
+                            
                         }
                         if (ImGui.BeginMenu("Field"))
                         {
@@ -448,19 +460,23 @@ namespace StudioCore.ParamEditor
                                         ValidateNames = true,
                                         CheckFileExists = true
                                     };
-                                    if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
+                                    rbrowseDlg.ShowDialog((result) =>
                                     {
-                                        string csv = TryReadFile(rbrowseDlg.FileName);
-                                        if (csv != null)
+                                        if (result == Forms.DialogResult.OK)
                                         {
-                                            (MassEditResult r, CompoundAction a) = MassParamEditCSV.PerformSingleMassEdit(ParamBank.PrimaryBank, csv, _activeView._selection.getActiveParam(), field.InternalName, CFG.Current.Param_Export_Delimiter[0], false);
-                                            if (r.Type == MassEditResultType.SUCCESS && a != null)
-                                                EditorActionManager.ExecuteAction(a);
-                                            else
-                                                Forms.MessageBox.Show(r.Information, "Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.None);
-                                            TaskManager.Run("PB:RefreshDirtyCache", false, true, true, () => ParamBank.PrimaryBank.RefreshParamDiffCaches());
+                                            string csv = TryReadFile(rbrowseDlg.FileName);
+                                            if (csv != null)
+                                            {
+                                                (MassEditResult r, CompoundAction a) = MassParamEditCSV.PerformSingleMassEdit(ParamBank.PrimaryBank, csv, _activeView._selection.getActiveParam(), field.InternalName, CFG.Current.Param_Export_Delimiter[0], false);
+                                                if (r.Type == MassEditResultType.SUCCESS && a != null)
+                                                    EditorActionManager.ExecuteAction(a);
+                                                else
+                                                    Forms.MessageBox.Show(r.Information, "Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.None);
+                                                TaskManager.Run("PB:RefreshDirtyCache", false, true, true, () => ParamBank.PrimaryBank.RefreshParamDiffCaches());
+                                            }
                                         }
-                                    }
+                                    });
+                                    
                                 }
                             }
                             ImGui.EndMenu();
@@ -587,10 +603,12 @@ namespace StudioCore.ParamEditor
                                 CheckPathExists = true,
                                 //ShowReadOnly = true,
                             };
-                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
-                            {
-                                ParamBank.LoadAuxBank(rbrowseDlg.FileName, null, null);
-                            }
+                            rbrowseDlg.ShowDialog((result) => {
+                                if (result == Forms.DialogResult.OK)
+                                {
+                                    ParamBank.LoadAuxBank(rbrowseDlg.FileName, null, null);
+                                }
+                            });
                         }
                         else
                         {
@@ -599,8 +617,10 @@ namespace StudioCore.ParamEditor
                                 Description = "Select folder for looseparams",
                                 UseDescriptionForTitle = true,
                             };
-                            if (rbrowseDlgFolder.ShowDialog() == Forms.DialogResult.OK)
+                            rbrowseDlgFolder.ShowDialog((result) => 
                             {
+                                if (result != Forms.DialogResult.OK)
+                                    return;
                                 var rbrowseDlgBnd = new Forms.OpenFileDialog()
                                 {
                                     Title = "Select file containing remaining, non-loose params",
@@ -609,21 +629,25 @@ namespace StudioCore.ParamEditor
                                     CheckFileExists = true,
                                     CheckPathExists = true,
                                 };
-                                if (rbrowseDlgBnd.ShowDialog() == Forms.DialogResult.OK)
-                                    {var rbrowseDlgEnemy = new Forms.OpenFileDialog()
-                                    {
-                                        Title = "Select file containing enemyparam",
-                                        Filter = AssetLocator.LooseParamFilter,
-                                        ValidateNames = true,
-                                        CheckFileExists = true,
-                                        CheckPathExists = true,
-                                    };
-                                    if (rbrowseDlgEnemy.ShowDialog() == Forms.DialogResult.OK)
-                                    {
-                                        ParamBank.LoadAuxBank(rbrowseDlgBnd.FileName, rbrowseDlgFolder.SelectedPath, rbrowseDlgEnemy.FileName);
+                                rbrowseDlgBnd.ShowDialog((res2) => {
+                                    if (res2 == Forms.DialogResult.OK)
+                                        {var rbrowseDlgEnemy = new Forms.OpenFileDialog()
+                                        {
+                                            Title = "Select file containing enemyparam",
+                                            Filter = AssetLocator.LooseParamFilter,
+                                            ValidateNames = true,
+                                            CheckFileExists = true,
+                                            CheckPathExists = true,
+                                        };
+                                        rbrowseDlgEnemy.ShowDialog((res3) => {
+                                            if (res3 == Forms.DialogResult.OK)
+                                            {
+                                                ParamBank.LoadAuxBank(rbrowseDlgBnd.FileName, rbrowseDlgFolder.SelectedPath, rbrowseDlgEnemy.FileName);
+                                            }
+                                        });
                                     }
-                                }
-                            }
+                                });
+                            });
                         }
                     }
                     catch (Exception e)
@@ -723,11 +747,13 @@ namespace StudioCore.ParamEditor
                                 CheckPathExists = true,
                             };
 
-                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
-                            {
-                                var path = rbrowseDlg.FileName;
-                                UpgradeRegulation(ParamBank.PrimaryBank, ParamBank.VanillaBank, path);
-                            }
+                            rbrowseDlg.ShowDialog((result) => {
+                                if (result == Forms.DialogResult.OK)
+                                {
+                                    var path = rbrowseDlg.FileName;
+                                    UpgradeRegulation(ParamBank.PrimaryBank, ParamBank.VanillaBank, path);
+                                }
+                            });
                         }
                     }
                     ImGui.PopStyleColor();

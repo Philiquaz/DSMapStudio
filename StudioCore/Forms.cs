@@ -33,6 +33,7 @@ namespace StudioCore.Forms
 #endif
         }
     }
+
     public class FolderBrowserDialog
     {
         public string Description = null;
@@ -40,7 +41,7 @@ namespace StudioCore.Forms
 
         public string SelectedPath;
 
-        public DialogResult ShowDialog()
+        public void ShowDialog(Action<DialogResult> Callback)
         {
 #if NOWINFORMS
             //TODO
@@ -55,18 +56,14 @@ namespace StudioCore.Forms
 
             var result = dlg.ShowDialog();
             SelectedPath = dlg.SelectedPath;
-            switch (result)
+            Callback(result switch
             {
-                case WinForms.DialogResult.Cancel:
-                    return DialogResult.Cancel;
-                case WinForms.DialogResult.OK:
-                    return DialogResult.OK;
-                case WinForms.DialogResult.Yes:
-                    return DialogResult.Yes;
-                case WinForms.DialogResult.No:
-                    return DialogResult.No;
-            }
-            return DialogResult.Cancel;
+                WinForms.DialogResult.Cancel => DialogResult.Cancel,
+                WinForms.DialogResult.OK => DialogResult.OK,
+                WinForms.DialogResult.Yes => DialogResult.Yes,
+                WinForms.DialogResult.No => DialogResult.No,
+                _ => DialogResult.Cancel
+            });
         }
 #endif
     }
@@ -82,7 +79,7 @@ namespace StudioCore.Forms
         public string FileName;
         public string[] FileNames;
 
-        public DialogResult ShowDialog()
+        public void ShowDialog(Action<DialogResult> Callback)
         {
 #if NOWINFORMS
             //TODO
@@ -106,18 +103,14 @@ namespace StudioCore.Forms
             var result = dlg.ShowDialog();
             FileName = dlg.FileName;
             FileNames = dlg.FileNames;
-            switch (result)
+            Callback(result switch
             {
-                case WinForms.DialogResult.Cancel:
-                    return DialogResult.Cancel;
-                case WinForms.DialogResult.OK:
-                    return DialogResult.OK;
-                case WinForms.DialogResult.Yes:
-                    return DialogResult.Yes;
-                case WinForms.DialogResult.No:
-                    return DialogResult.No;
-            }
-            return DialogResult.Cancel;
+                WinForms.DialogResult.Cancel => DialogResult.Cancel,
+                WinForms.DialogResult.OK => DialogResult.OK,
+                WinForms.DialogResult.Yes => DialogResult.Yes,
+                WinForms.DialogResult.No => DialogResult.No,
+                _ => DialogResult.Cancel
+            });
 #endif
         }
     }
@@ -131,7 +124,7 @@ namespace StudioCore.Forms
 
         public string FileName;
 
-        public DialogResult ShowDialog()
+        public void ShowDialog(Action<DialogResult> Callback)
         {
 #if NOWINFORMS
             //TODO
@@ -152,18 +145,14 @@ namespace StudioCore.Forms
 
             var result = dlg.ShowDialog();
             FileName = dlg.FileName;
-            switch (result)
+            Callback(result switch
             {
-                case WinForms.DialogResult.Cancel:
-                    return DialogResult.Cancel;
-                case WinForms.DialogResult.OK:
-                    return DialogResult.OK;
-                case WinForms.DialogResult.Yes:
-                    return DialogResult.Yes;
-                case WinForms.DialogResult.No:
-                    return DialogResult.No;
-            }
-            return DialogResult.Cancel;
+                WinForms.DialogResult.Cancel => DialogResult.Cancel,
+                WinForms.DialogResult.OK => DialogResult.OK,
+                WinForms.DialogResult.Yes => DialogResult.Yes,
+                WinForms.DialogResult.No => DialogResult.No,
+                _ => DialogResult.Cancel
+            });
 #endif
         }
     }
@@ -207,18 +196,18 @@ namespace StudioCore.Forms
         }
 
     }
-    public enum MessageBoxButtons
-    {
-        OK,
-        OKCancel,
-        YesNo
-    }
     public enum DialogResult
     {
         Cancel,
         OK,
         Yes,
         No
+    }
+    public enum MessageBoxButtons
+    {
+        OK,
+        OKCancel,
+        YesNo
     }
     public enum MessageBoxIcon
     {
