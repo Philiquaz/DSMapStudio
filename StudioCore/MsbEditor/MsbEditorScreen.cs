@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Windows.Forms;
 using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.Utilities;
@@ -1078,9 +1077,9 @@ namespace StudioCore.MsbEditor
             }
             catch (SavingFailedException e)
             {
-                System.Windows.Forms.MessageBox.Show(e.Wrapped.Message, e.Message,
-                     System.Windows.Forms.MessageBoxButtons.OK,
-                     System.Windows.Forms.MessageBoxIcon.None);
+                Forms.MessageBox.Show(e.Wrapped.Message, e.Message,
+                    Forms.MessageBoxButtons.OK,
+                    Forms.MessageBoxIcon.None);
             }
         }
 
@@ -1092,9 +1091,9 @@ namespace StudioCore.MsbEditor
             }
             catch (SavingFailedException e)
             {
-                System.Windows.Forms.MessageBox.Show(e.Wrapped.Message, e.Message,
-                     System.Windows.Forms.MessageBoxButtons.OK,
-                     System.Windows.Forms.MessageBoxIcon.None);
+                Forms.MessageBox.Show(e.Wrapped.Message, e.Message,
+                    Forms.MessageBoxButtons.OK,
+                    Forms.MessageBoxIcon.None);
             }
         }
 

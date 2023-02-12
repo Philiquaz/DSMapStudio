@@ -7,7 +7,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using FSParam;
 using Veldrid;
 using Veldrid.Sdl2;
@@ -174,19 +173,19 @@ namespace StudioCore.ParamEditor
 
             if (result == ParamBank.ParamUpgradeResult.OldRegulationNotFound)
             {
-                System.Windows.Forms.MessageBox.Show(
+                Forms.MessageBox.Show(
                     $@"Unable to load old vanilla regulation.", 
                     "Loading error",
-                    System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Error);
+                    Forms.MessageBoxButtons.OK,
+                    Forms.MessageBoxIcon.Error);
             }
             if (result == ParamBank.ParamUpgradeResult.OldRegulationVersionMismatch)
             {
-                System.Windows.Forms.MessageBox.Show(
+                Forms.MessageBox.Show(
                     $@"The version of the vanilla regulation you selected does not match the version of your mod.", 
                     "Version mismatch",
-                    System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Error);
+                    Forms.MessageBoxButtons.OK,
+                    Forms.MessageBoxIcon.Error);
                 return;
             }
 
@@ -216,7 +215,7 @@ namespace StudioCore.ParamEditor
                 }
                 logWriter.Flush();
                 
-                var msgRes = System.Windows.Forms.MessageBox.Show(
+                var msgRes = Forms.MessageBox.Show(
                     $@"Conflicts were found while upgrading params. This is usually caused by a game update adding " +
                     "a new row that has the same ID as the one that you added in your mod. It is highly recommended that you " +
                     "review these conflicts and handle them before saving. You can revert to your original params by " +
@@ -225,9 +224,9 @@ namespace StudioCore.ParamEditor
                     "the added rows in the vanilla regulation.\n\nThe list of conflicts can be found in regulationUpgradeLog.txt " +
                     "in your mod project directory. Would you like to open them now?",
                     "Row conflicts found",
-                    System.Windows.Forms.MessageBoxButtons.YesNo,
-                    System.Windows.Forms.MessageBoxIcon.Warning);
-                if (msgRes == DialogResult.Yes)
+                    Forms.MessageBoxButtons.YesNo,
+                    Forms.MessageBoxIcon.Warning);
+                if (msgRes == Forms.DialogResult.Yes)
                 {
                     Process.Start(new ProcessStartInfo
                     {
@@ -239,33 +238,33 @@ namespace StudioCore.ParamEditor
 
             if (result == ParamBank.ParamUpgradeResult.Success)
             {
-                var msgUpgradeEdits = System.Windows.Forms.MessageBox.Show(
+                var msgUpgradeEdits = Forms.MessageBox.Show(
                     $@"MapStudio can automatically perform several edits to keep your params consistent with updates to vanilla params. " +
                     "Would you like to perform these edits?", "Regulation upgrade edits",
-                    System.Windows.Forms.MessageBoxButtons.YesNo,
-                    System.Windows.Forms.MessageBoxIcon.Question);
-                if (msgUpgradeEdits == System.Windows.Forms.DialogResult.Yes)
+                    Forms.MessageBoxButtons.YesNo,
+                    Forms.MessageBoxIcon.Question);
+                if (msgUpgradeEdits == Forms.DialogResult.Yes)
                 {
                     var (success, fail) = bank.RunUpgradeEdits(oldVersion, newVersion);
                     if (success.Count > 0 || fail.Count > 0)
-                        System.Windows.Forms.MessageBox.Show(
+                        Forms.MessageBox.Show(
                             (success.Count > 0 ? "Successfully performed the following edits:\n" + String.Join('\n', success) : "") +
                             (success.Count > 0 && fail.Count > 0 ? "\n" : "") + 
                             (fail.Count > 0 ? "Unable to perform the following edits:\n" + String.Join('\n', fail) : ""),
                             "Regulation upgrade edits",
-                            System.Windows.Forms.MessageBoxButtons.OK,
-                            System.Windows.Forms.MessageBoxIcon.Information
+                            Forms.MessageBoxButtons.OK,
+                            Forms.MessageBoxIcon.Information
                         );
                     CacheBank.ClearCaches();
                     bank.RefreshParamDiffCaches();
                 }
 
 
-                var msgRes = System.Windows.Forms.MessageBox.Show(
+                var msgRes = Forms.MessageBox.Show(
                     "Upgrade successful",
                     "Success",
-                    System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.Information);
+                    Forms.MessageBoxButtons.OK,
+                    Forms.MessageBoxIcon.Information);
             }
             
             EditorActionManager.Clear();
@@ -332,25 +331,25 @@ namespace StudioCore.ParamEditor
                         if (ImGui.MenuItem("All"))
                         {
                             _activeView._selection.sortSelection();
-                            var rbrowseDlg = new System.Windows.Forms.SaveFileDialog()
+                            var rbrowseDlg = new Forms.SaveFileDialog()
                             {
                                 Filter = "CSV file (*.CSV)|*.CSV|Text file (*.txt) |*.TXT|All Files|*.*",
                                 ValidateNames = true,
                                 CheckPathExists = true
                             };
-                            if (rbrowseDlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
                                 TryWriteFile(rbrowseDlg.FileName, MassParamEditCSV.GenerateCSV(_activeView._selection.getSelectedRows(), ParamBank.PrimaryBank.Params[_activeView._selection.getActiveParam()], CFG.Current.Param_Export_Delimiter[0]));
                         }
                         if (ImGui.MenuItem("Name"))
                         {
                             _activeView._selection.sortSelection();
-                            var rbrowseDlg = new System.Windows.Forms.SaveFileDialog()
+                            var rbrowseDlg = new Forms.SaveFileDialog()
                             {
                                 Filter = "CSV file (*.CSV)|*.CSV|Text file (*.txt) |*.TXT|All Files|*.*",
                                 ValidateNames = true,
                                 CheckPathExists = true
                             };
-                            if (rbrowseDlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
                                 TryWriteFile(rbrowseDlg.FileName, MassParamEditCSV.GenerateSingleCSV(_activeView._selection.getSelectedRows(), ParamBank.PrimaryBank.Params[_activeView._selection.getActiveParam()], "Name", CFG.Current.Param_Export_Delimiter[0]));
                         }
                         if (ImGui.BeginMenu("Field"))
@@ -360,13 +359,13 @@ namespace StudioCore.ParamEditor
                                 if (ImGui.MenuItem(field.InternalName))
                                 {
                                     _activeView._selection.sortSelection();
-                                    var rbrowseDlg = new System.Windows.Forms.SaveFileDialog()
+                                    var rbrowseDlg = new Forms.SaveFileDialog()
                                     {
                                         Filter = "CSV file (*.CSV)|*.CSV|Text file (*.txt) |*.TXT|All Files|*.*",
                                         ValidateNames = true,
                                         CheckPathExists = true
                                     };
-                                    if (rbrowseDlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                                    if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
                                         TryWriteFile(rbrowseDlg.FileName, MassParamEditCSV.GenerateSingleCSV(_activeView._selection.getSelectedRows(), ParamBank.PrimaryBank.Params[_activeView._selection.getActiveParam()], field.InternalName, CFG.Current.Param_Export_Delimiter[0]));
                                 }
                             }
@@ -396,13 +395,13 @@ namespace StudioCore.ParamEditor
                     {
                         if (ImGui.MenuItem("All"))
                         {
-                            var rbrowseDlg = new System.Windows.Forms.OpenFileDialog()
+                            var rbrowseDlg = new Forms.OpenFileDialog()
                             {
                                 Filter = "CSV file (*.CSV)|*.CSV|Text file (*.txt) |*.TXT|All Files|*.*",
                                 ValidateNames = true,
                                 CheckFileExists = true
                             };
-                            if (rbrowseDlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
                             {
                                 string csv = TryReadFile(rbrowseDlg.FileName);
                                 if (csv != null)
@@ -411,19 +410,19 @@ namespace StudioCore.ParamEditor
                                     if (r.Type == MassEditResultType.SUCCESS)
                                         TaskManager.Run("PB:RefreshDirtyCache", false, true, true, () => ParamBank.PrimaryBank.RefreshParamDiffCaches());
                                     else
-                                        System.Windows.Forms.MessageBox.Show(r.Information, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.None);
+                                        Forms.MessageBox.Show(r.Information, "Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.None);
                                 }
                             }
                         }
                         if (ImGui.MenuItem("Name"))
                         {
-                            var rbrowseDlg = new System.Windows.Forms.OpenFileDialog()
+                            var rbrowseDlg = new Forms.OpenFileDialog()
                             {
                                 Filter = "CSV file (*.CSV)|*.CSV|Text file (*.txt) |*.TXT|All Files|*.*",
                                 ValidateNames = true,
                                 CheckFileExists = true
                             };
-                            if (rbrowseDlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
                             {
                                 string csv = TryReadFile(rbrowseDlg.FileName);
                                 if (csv != null)
@@ -432,7 +431,7 @@ namespace StudioCore.ParamEditor
                                     if (r.Type == MassEditResultType.SUCCESS && a != null)
                                         EditorActionManager.ExecuteAction(a);
                                     else
-                                        System.Windows.Forms.MessageBox.Show(r.Information, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.None);
+                                        Forms.MessageBox.Show(r.Information, "Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.None);
                                     TaskManager.Run("PB:RefreshDirtyCache", false, true, true, () => ParamBank.PrimaryBank.RefreshParamDiffCaches());
                                 }
                             }
@@ -443,13 +442,13 @@ namespace StudioCore.ParamEditor
                             {
                                 if (ImGui.MenuItem(field.InternalName))
                                 {
-                                    var rbrowseDlg = new System.Windows.Forms.OpenFileDialog()
+                                    var rbrowseDlg = new Forms.OpenFileDialog()
                                     {
                                         Filter = "CSV file (*.CSV)|*.CSV|Text file (*.txt) |*.TXT|All Files|*.*",
                                         ValidateNames = true,
                                         CheckFileExists = true
                                     };
-                                    if (rbrowseDlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                                    if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
                                     {
                                         string csv = TryReadFile(rbrowseDlg.FileName);
                                         if (csv != null)
@@ -458,7 +457,7 @@ namespace StudioCore.ParamEditor
                                             if (r.Type == MassEditResultType.SUCCESS && a != null)
                                                 EditorActionManager.ExecuteAction(a);
                                             else
-                                                System.Windows.Forms.MessageBox.Show(r.Information, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.None);
+                                                Forms.MessageBox.Show(r.Information, "Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.None);
                                             TaskManager.Run("PB:RefreshDirtyCache", false, true, true, () => ParamBank.PrimaryBank.RefreshParamDiffCaches());
                                         }
                                     }
@@ -579,7 +578,7 @@ namespace StudioCore.ParamEditor
                     {
                         if (_projectSettings.GameType != GameType.DarkSoulsIISOTFS)
                         {
-                            var rbrowseDlg = new System.Windows.Forms.OpenFileDialog()
+                            var rbrowseDlg = new Forms.OpenFileDialog()
                             {
                                 Title = "Select file containing params",
                                 Filter = AssetLocator.ParamFilter,
@@ -588,21 +587,21 @@ namespace StudioCore.ParamEditor
                                 CheckPathExists = true,
                                 //ShowReadOnly = true,
                             };
-                            if (rbrowseDlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
                             {
                                 ParamBank.LoadAuxBank(rbrowseDlg.FileName, null, null);
                             }
                         }
                         else
                         {
-                            var rbrowseDlgFolder = new System.Windows.Forms.FolderBrowserDialog()
+                            var rbrowseDlgFolder = new Forms.FolderBrowserDialog()
                             {
                                 Description = "Select folder for looseparams",
                                 UseDescriptionForTitle = true,
                             };
-                            if (rbrowseDlgFolder.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            if (rbrowseDlgFolder.ShowDialog() == Forms.DialogResult.OK)
                             {
-                                var rbrowseDlgBnd = new System.Windows.Forms.OpenFileDialog()
+                                var rbrowseDlgBnd = new Forms.OpenFileDialog()
                                 {
                                     Title = "Select file containing remaining, non-loose params",
                                     Filter = AssetLocator.ParamFilter,
@@ -610,8 +609,8 @@ namespace StudioCore.ParamEditor
                                     CheckFileExists = true,
                                     CheckPathExists = true,
                                 };
-                                if (rbrowseDlgBnd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                                    {var rbrowseDlgEnemy = new System.Windows.Forms.OpenFileDialog()
+                                if (rbrowseDlgBnd.ShowDialog() == Forms.DialogResult.OK)
+                                    {var rbrowseDlgEnemy = new Forms.OpenFileDialog()
                                     {
                                         Title = "Select file containing enemyparam",
                                         Filter = AssetLocator.LooseParamFilter,
@@ -619,7 +618,7 @@ namespace StudioCore.ParamEditor
                                         CheckFileExists = true,
                                         CheckPathExists = true,
                                     };
-                                    if (rbrowseDlgEnemy.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                                    if (rbrowseDlgEnemy.ShowDialog() == Forms.DialogResult.OK)
                                     {
                                         ParamBank.LoadAuxBank(rbrowseDlgBnd.FileName, rbrowseDlgFolder.SelectedPath, rbrowseDlgEnemy.FileName);
                                     }
@@ -629,11 +628,11 @@ namespace StudioCore.ParamEditor
                     }
                     catch (Exception e)
                     {
-                        System.Windows.Forms.MessageBox.Show(
+                        Forms.MessageBox.Show(
                         $@"Unable to load regulation.\n" + e.Message,
                         "Loading error",
-                        System.Windows.Forms.MessageBoxButtons.OK,
-                        System.Windows.Forms.MessageBoxIcon.Error);
+                        Forms.MessageBoxButtons.OK,
+                        Forms.MessageBoxIcon.Error);
                     }
                 }
                 if (ImGui.BeginMenu("Clear param comparison...", ParamBank.AuxBanks.Count > 0))
@@ -700,7 +699,7 @@ namespace StudioCore.ParamEditor
                     ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.0f, 1f, 0f, 1.0f));
                     if (ImGui.Button("Upgrade Params"))
                     {
-                        var message = System.Windows.Forms.MessageBox.Show(
+                        var message = Forms.MessageBox.Show(
                             $@"Your mod is currently on regulation version {ParamBank.PrimaryBank.ParamVersion} while the game is on param version " +
                             $"{ParamBank.VanillaBank.ParamVersion}.\n\nWould you like to attempt to upgrade your mod's params to be based on the " +
                             "latest game version? Params will be upgraded by copying all rows that you modified to the new regulation, " +
@@ -711,11 +710,11 @@ namespace StudioCore.ParamEditor
                             "in the param editor where you can view and save them. This operation is not undoable, but you can reload the project without " +
                             "saving to revert to the un-upgraded params.\n\n" +
                             "Would you like to continue?", "Regulation upgrade",
-                            System.Windows.Forms.MessageBoxButtons.OKCancel,
-                            System.Windows.Forms.MessageBoxIcon.Question);
-                        if (message == System.Windows.Forms.DialogResult.OK)
+                            Forms.MessageBoxButtons.OKCancel,
+                            Forms.MessageBoxIcon.Question);
+                        if (message == Forms.DialogResult.OK)
                         {
-                            var rbrowseDlg = new System.Windows.Forms.OpenFileDialog()
+                            var rbrowseDlg = new Forms.OpenFileDialog()
                             {
                                 Title = $"Select regulation.bin for game version {ParamBank.PrimaryBank.ParamVersion}...",
                                 Filter = AssetLocator.ERParamUpgradeFilter,
@@ -724,7 +723,7 @@ namespace StudioCore.ParamEditor
                                 CheckPathExists = true,
                             };
 
-                            if (rbrowseDlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                            if (rbrowseDlg.ShowDialog() == Forms.DialogResult.OK)
                             {
                                 var path = rbrowseDlg.FileName;
                                 UpgradeRegulation(ParamBank.PrimaryBank, ParamBank.VanillaBank, path);
@@ -1467,9 +1466,9 @@ namespace StudioCore.ParamEditor
             }
             catch (SavingFailedException e)
             {
-                System.Windows.Forms.MessageBox.Show(e.Wrapped.Message, e.Message,
-                    System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.None);
+                Forms.MessageBox.Show(e.Wrapped.Message, e.Message,
+                    Forms.MessageBoxButtons.OK,
+                    Forms.MessageBoxIcon.None);
             }
         }
 
@@ -1484,9 +1483,9 @@ namespace StudioCore.ParamEditor
             }
             catch (SavingFailedException e)
             {
-                System.Windows.Forms.MessageBox.Show(e.Wrapped.Message, e.Message,
-                    System.Windows.Forms.MessageBoxButtons.OK,
-                    System.Windows.Forms.MessageBoxIcon.None);
+                Forms.MessageBox.Show(e.Wrapped.Message, e.Message,
+                    Forms.MessageBoxButtons.OK,
+                    Forms.MessageBoxIcon.None);
             }
         }
 
@@ -1498,7 +1497,7 @@ namespace StudioCore.ParamEditor
             }
             catch (Exception e)
             {
-                System.Windows.Forms.MessageBox.Show("Unable to write to "+path, "Write Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Forms.MessageBox.Show("Unable to write to "+path, "Write Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Error);
             }
         }
         private static string TryReadFile(string path)
@@ -1509,7 +1508,7 @@ namespace StudioCore.ParamEditor
             }
             catch (Exception e)
             {
-                System.Windows.Forms.MessageBox.Show("Unable to read from "+path, "Read Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Forms.MessageBox.Show("Unable to read from "+path, "Read Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Error);
                 return null;
             }
         }

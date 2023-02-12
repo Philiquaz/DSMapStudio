@@ -6,7 +6,6 @@ using System.Linq;
 using SoulsFormats;
 using System.Threading.Tasks;
 using StudioCore.Editor;
-using System.Windows.Forms;
 using Newtonsoft.Json;
 
 namespace StudioCore.TextEditor
@@ -1253,7 +1252,7 @@ namespace StudioCore.TextEditor
                 var dupes = info.Fmg.Entries.GroupBy(e => e.ID).SelectMany(g => g.SkipLast(1));
                 if (dupes.Any())
                 {
-                    if (!askedAboutDupes && MessageBox.Show("Duplicate Text Entries within the same FMG have been found.\n\nRemove all duplicates? (Latest entries are kept)", "Duplicate Text Entries", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    if (!askedAboutDupes && Forms.MessageBox.Show("Duplicate Text Entries within the same FMG have been found.\n\nRemove all duplicates? (Latest entries are kept)", "Duplicate Text Entries", Forms.MessageBoxButtons.YesNo) == Forms.DialogResult.Yes)
                     {
                         ignoreDupes = false;
                     }
@@ -1290,10 +1289,10 @@ namespace StudioCore.TextEditor
 
         public static bool ExportFMGs()
         {
-            FolderBrowserDialog folderDialog = new();
+            Forms.FolderBrowserDialog folderDialog = new();
             folderDialog.UseDescriptionForTitle = true;
             folderDialog.Description = "Choose Export Folder";
-            if (folderDialog.ShowDialog() != DialogResult.OK)
+            if (folderDialog.ShowDialog() != Forms.DialogResult.OK)
             {
                 return false;
             }
@@ -1348,17 +1347,17 @@ namespace StudioCore.TextEditor
                     filecount++;
                 }
             }
-            MessageBox.Show($"Exported {filecount} text files", "Finished", MessageBoxButtons.OK);
+            Forms.MessageBox.Show($"Exported {filecount} text files", "Finished", Forms.MessageBoxButtons.OK);
             return true;
         }
 
         public static bool ImportFMGs()
         {
-            OpenFileDialog fileDialog = new();
+            Forms.OpenFileDialog fileDialog = new();
             fileDialog.Title = "Choose Files to Import";
             fileDialog.Filter = "Exported FMGs|*.fmg.json|All files|*.*";
             fileDialog.Multiselect = true;
-            if (fileDialog.ShowDialog() != DialogResult.OK)
+            if (fileDialog.ShowDialog() != Forms.DialogResult.OK)
             {
                 return false;
             }
@@ -1389,12 +1388,12 @@ namespace StudioCore.TextEditor
                     }
                     if (!success)
                     {
-                        MessageBox.Show($"Couldn't locate FMG using FMG ID `{json.FmgID}`", "Import Error", MessageBoxButtons.OK);
+                        Forms.MessageBox.Show($"Couldn't locate FMG using FMG ID `{json.FmgID}`", "Import Error", Forms.MessageBoxButtons.OK);
                     }
                 }
                 catch (JsonReaderException e)
                 {
-                    MessageBox.Show($"{e.Message}\n\nCouldn't import '{filePath}'", "Import Error", MessageBoxButtons.OK);
+                    Forms.MessageBox.Show($"{e.Message}\n\nCouldn't import '{filePath}'", "Import Error", Forms.MessageBoxButtons.OK);
                 }
             }
 
@@ -1402,7 +1401,7 @@ namespace StudioCore.TextEditor
                 return false;
 
             HandleDuplicateEntries();
-            MessageBox.Show($"Imported {filecount} text files", "Finished", MessageBoxButtons.OK);
+            Forms.MessageBox.Show($"Imported {filecount} text files", "Finished", Forms.MessageBoxButtons.OK);
             return true;
         }
 

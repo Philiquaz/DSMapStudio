@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Runtime.Serialization;
@@ -15,7 +14,6 @@ using StudioCore.Scene;
 using StudioCore.Editor;
 using System.Numerics;
 using SoulsFormats.KF4;
-using System.Windows.Forms.Design;
 using static SoulsFormats.MCP;
 using System.ComponentModel;
 
@@ -797,7 +795,7 @@ namespace StudioCore.MsbEditor
                     }
                     else
                     {
-                        MessageBox.Show($@"{mp.Name} has an ID that's already used. Please change it to something unique and save again.", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Forms.MessageBox.Show($@"{mp.Name} has an ID that's already used. Please change it to something unique and save again.", "", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Error);
                         return false;
                     }
                     var loc = mp.GetRow("generator-loc");
@@ -836,7 +834,7 @@ namespace StudioCore.MsbEditor
                     }
                     else
                     {
-                        MessageBox.Show($@"{mp.Name} has an ID that's already used. Please change it to something unique and save again.", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Forms.MessageBox.Show($@"{mp.Name} has an ID that's already used. Please change it to something unique and save again.", "", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Error);
                         return false;
                     }
                     regist.AddRow(new Param.Row(mp, regist));
@@ -858,7 +856,7 @@ namespace StudioCore.MsbEditor
                     }
                     else
                     {
-                        MessageBox.Show($@"{mp.Name} has an ID that's already used. Please change it to something unique and save again.", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Forms.MessageBox.Show($@"{mp.Name} has an ID that's already used. Please change it to something unique and save again.", "", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Error);
                         return false;
                     }
 
@@ -882,7 +880,7 @@ namespace StudioCore.MsbEditor
                     }
                     else
                     {
-                        MessageBox.Show($@"{mp.Name} has an ID that's already used. Please change it to something unique and save again.", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Forms.MessageBox.Show($@"{mp.Name} has an ID that's already used. Please change it to something unique and save again.", "", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Error);
                         return false;
                     }
 
@@ -913,7 +911,7 @@ namespace StudioCore.MsbEditor
                     }
                     else
                     {
-                        MessageBox.Show($@"{mp.Name} has an ID that's already used. Please change it to something unique and save again.", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Forms.MessageBox.Show($@"{mp.Name} has an ID that's already used. Please change it to something unique and save again.", "", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Error);
                         return false;
                     }
 

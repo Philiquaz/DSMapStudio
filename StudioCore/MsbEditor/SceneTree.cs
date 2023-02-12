@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using ImGuiNET;
 using Veldrid;
-using System.Windows.Forms;
 using SoulsFormats;
 
 namespace StudioCore.MsbEditor
@@ -726,9 +725,9 @@ namespace StudioCore.MsbEditor
                                 }
                                 catch (SavingFailedException e)
                                 {
-                                    System.Windows.Forms.MessageBox.Show(e.Wrapped.Message, e.Message,
-                                         System.Windows.Forms.MessageBoxButtons.OK,
-                                         System.Windows.Forms.MessageBoxIcon.None);
+                                    Forms.MessageBox.Show(e.Wrapped.Message, e.Message,
+                                        Forms.MessageBoxButtons.OK,
+                                        Forms.MessageBoxIcon.None);
                                 }
                             }
                             if (ImGui.Selectable("Unload Map"))

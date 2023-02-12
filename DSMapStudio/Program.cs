@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using StudioCore;
-using System.Windows.Forms;
 using System.Security.Permissions;
 using Veldrid.Sdl2;
+using StudioCore.Forms;
 
 namespace DSMapStudio
 {
@@ -15,7 +15,7 @@ namespace DSMapStudio
     {
         public static string[] ARGS;
 
-        private static string _version = Application.ProductVersion;
+        private static string _version = Forms.ProductVersion;
 
         /// <summary>
         /// The main entry point for the application.
