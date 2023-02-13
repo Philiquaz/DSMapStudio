@@ -196,7 +196,7 @@ namespace StudioCore.Forms
         public string Description = "";
         public bool UseDescriptionForTitle = false;
 
-        public string SelectedPath;
+        public string SelectedPath = "";
 
         public void ShowDialog(Action<DialogResult> Callback)
         {
