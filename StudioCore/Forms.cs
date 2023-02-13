@@ -39,6 +39,7 @@ namespace StudioCore.Forms
 
         public static void FormsPopups()
         {
+#if NOWINFORMS
             if (fbd != (null, null))
             {
                 if (!ImGui.IsPopupOpen("FormsFolderBrowserDialog"))
@@ -91,8 +92,6 @@ namespace StudioCore.Forms
                     ImGui.EndPopup();
                 }
             }
-#if NOWINFORMS
-
 #else
 #endif
         }
@@ -128,8 +127,8 @@ namespace StudioCore.Forms
                 WinForms.DialogResult.No => DialogResult.No,
                 _ => DialogResult.Cancel
             });
-        }
 #endif
+        }
     }
     public class OpenFileDialog
     {
@@ -223,7 +222,7 @@ namespace StudioCore.Forms
     
     public class MessageBox
     {
-        public static DialogResult Show(string message, string title, MessageBoxButtons buttons, MessageBoxIcon icon = MessageBoxIcon.None)
+        public static void Show(string message, string title, MessageBoxButtons buttons, MessageBoxIcon icon, Action<DialogResult> Callback = null)
         {
 #if NOWINFORMS
             Forms.mb = (message, title, buttons, icon, Callback);
@@ -244,18 +243,15 @@ namespace StudioCore.Forms
                 MessageBoxIcon.Information => WinForms.MessageBoxIcon.Information
             };
             var result = WinForms.MessageBox.Show(message, title, btn, icn);
-            switch (result)
-            {
-                case WinForms.DialogResult.Cancel:
-                    return DialogResult.Cancel;
-                case WinForms.DialogResult.OK:
-                    return DialogResult.OK;
-                case WinForms.DialogResult.Yes:
-                    return DialogResult.Yes;
-                case WinForms.DialogResult.No:
-                    return DialogResult.No;
-            }
-            return DialogResult.Cancel;
+            if (Callback != null)
+                Callback(result switch
+                {
+                    WinForms.DialogResult.Cancel => DialogResult.Cancel,
+                    WinForms.DialogResult.OK => DialogResult.OK,
+                    WinForms.DialogResult.Yes => DialogResult.Yes,
+                    WinForms.DialogResult.No => DialogResult.No,
+                    _ => DialogResult.Cancel
+                });
 #endif
         }
 
@@ -281,4 +277,5 @@ namespace StudioCore.Forms
         Question,
         Information
     }
+
 }

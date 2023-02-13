@@ -215,7 +215,7 @@ namespace StudioCore.ParamEditor
                 }
                 logWriter.Flush();
                 
-                var msgRes = Forms.MessageBox.Show(
+                Forms.MessageBox.Show(
                     $@"Conflicts were found while upgrading params. This is usually caused by a game update adding " +
                     "a new row that has the same ID as the one that you added in your mod. It is highly recommended that you " +
                     "review these conflicts and handle them before saving. You can revert to your original params by " +
@@ -225,46 +225,49 @@ namespace StudioCore.ParamEditor
                     "in your mod project directory. Would you like to open them now?",
                     "Row conflicts found",
                     Forms.MessageBoxButtons.YesNo,
-                    Forms.MessageBoxIcon.Warning);
-                if (msgRes == Forms.DialogResult.Yes)
+                    Forms.MessageBoxIcon.Warning, (result) =>
                 {
-                    Process.Start(new ProcessStartInfo
+                    if (result == Forms.DialogResult.Yes)
                     {
-                        FileName = "explorer",
-                        Arguments = "\"" + logPath + "\""
-                    });
-                }
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "explorer",
+                            Arguments = "\"" + logPath + "\""
+                        });
+                    }
+                });
             }
 
             if (result == ParamBank.ParamUpgradeResult.Success)
             {
-                var msgUpgradeEdits = Forms.MessageBox.Show(
+                Forms.MessageBox.Show(
                     $@"MapStudio can automatically perform several edits to keep your params consistent with updates to vanilla params. " +
                     "Would you like to perform these edits?", "Regulation upgrade edits",
                     Forms.MessageBoxButtons.YesNo,
-                    Forms.MessageBoxIcon.Question);
-                if (msgUpgradeEdits == Forms.DialogResult.Yes)
+                    Forms.MessageBoxIcon.Question, (result) =>
                 {
-                    var (success, fail) = bank.RunUpgradeEdits(oldVersion, newVersion);
-                    if (success.Count > 0 || fail.Count > 0)
-                        Forms.MessageBox.Show(
-                            (success.Count > 0 ? "Successfully performed the following edits:\n" + String.Join('\n', success) : "") +
-                            (success.Count > 0 && fail.Count > 0 ? "\n" : "") + 
-                            (fail.Count > 0 ? "Unable to perform the following edits:\n" + String.Join('\n', fail) : ""),
-                            "Regulation upgrade edits",
-                            Forms.MessageBoxButtons.OK,
-                            Forms.MessageBoxIcon.Information
-                        );
-                    CacheBank.ClearCaches();
-                    bank.RefreshParamDiffCaches();
-                }
+                    if (result == Forms.DialogResult.Yes)
+                    {
+                        var (success, fail) = bank.RunUpgradeEdits(oldVersion, newVersion);
+                        if (success.Count > 0 || fail.Count > 0)
+                            Forms.MessageBox.Show(
+                                (success.Count > 0 ? "Successfully performed the following edits:\n" + String.Join('\n', success) : "") +
+                                (success.Count > 0 && fail.Count > 0 ? "\n" : "") + 
+                                (fail.Count > 0 ? "Unable to perform the following edits:\n" + String.Join('\n', fail) : ""),
+                                "Regulation upgrade edits",
+                                Forms.MessageBoxButtons.OK,
+                                Forms.MessageBoxIcon.Information
+                            );
+                        CacheBank.ClearCaches();
+                        bank.RefreshParamDiffCaches();
+                    }
 
-
-                var msgRes = Forms.MessageBox.Show(
-                    "Upgrade successful",
-                    "Success",
-                    Forms.MessageBoxButtons.OK,
-                    Forms.MessageBoxIcon.Information);
+                    Forms.MessageBox.Show(
+                        "Upgrade successful",
+                        "Success",
+                        Forms.MessageBoxButtons.OK,
+                        Forms.MessageBoxIcon.Information);
+                });
             }
             
             EditorActionManager.Clear();
@@ -723,7 +726,7 @@ namespace StudioCore.ParamEditor
                     ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.0f, 1f, 0f, 1.0f));
                     if (ImGui.Button("Upgrade Params"))
                     {
-                        var message = Forms.MessageBox.Show(
+                        Forms.MessageBox.Show(
                             $@"Your mod is currently on regulation version {ParamBank.PrimaryBank.ParamVersion} while the game is on param version " +
                             $"{ParamBank.VanillaBank.ParamVersion}.\n\nWould you like to attempt to upgrade your mod's params to be based on the " +
                             "latest game version? Params will be upgraded by copying all rows that you modified to the new regulation, " +
@@ -735,26 +738,28 @@ namespace StudioCore.ParamEditor
                             "saving to revert to the un-upgraded params.\n\n" +
                             "Would you like to continue?", "Regulation upgrade",
                             Forms.MessageBoxButtons.OKCancel,
-                            Forms.MessageBoxIcon.Question);
-                        if (message == Forms.DialogResult.OK)
+                            Forms.MessageBoxIcon.Question, (result) =>
                         {
-                            var rbrowseDlg = new Forms.OpenFileDialog()
+                            if (result == Forms.DialogResult.OK)
                             {
-                                Title = $"Select regulation.bin for game version {ParamBank.PrimaryBank.ParamVersion}...",
-                                Filter = AssetLocator.ERParamUpgradeFilter,
-                                ValidateNames = true,
-                                CheckFileExists = true,
-                                CheckPathExists = true,
-                            };
-
-                            rbrowseDlg.ShowDialog((result) => {
-                                if (result == Forms.DialogResult.OK)
+                                var rbrowseDlg = new Forms.OpenFileDialog()
                                 {
-                                    var path = rbrowseDlg.FileName;
-                                    UpgradeRegulation(ParamBank.PrimaryBank, ParamBank.VanillaBank, path);
-                                }
-                            });
-                        }
+                                    Title = $"Select regulation.bin for game version {ParamBank.PrimaryBank.ParamVersion}...",
+                                    Filter = AssetLocator.ERParamUpgradeFilter,
+                                    ValidateNames = true,
+                                    CheckFileExists = true,
+                                    CheckPathExists = true,
+                                };
+
+                                rbrowseDlg.ShowDialog((result) => {
+                                    if (result == Forms.DialogResult.OK)
+                                    {
+                                        var path = rbrowseDlg.FileName;
+                                        UpgradeRegulation(ParamBank.PrimaryBank, ParamBank.VanillaBank, path);
+                                    }
+                                });
+                            }
+                        });
                     }
                     ImGui.PopStyleColor();
                 }

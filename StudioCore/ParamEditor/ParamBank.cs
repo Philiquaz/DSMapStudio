@@ -1078,45 +1078,57 @@ namespace StudioCore.ParamEditor
             // If params aren't loose, replace params with edited ones
             if (!loose)
             {
-                // Replace params in paramBND, write remaining params loosely
-                if (paramBnd.Files.Find(e => e.Name.EndsWith(".param")) == null)
+                Action<BND4> onRepack = (paramBnd) =>
                 {
-                    if (Forms.MessageBox.Show("It appears that you are trying to save params non-loosely with an \"enc_regulation.bnd\" that has previously been saved loosely." +
-                        "\n\nWould you like to reinsert params into the bnd that were previously stripped out?", "DS2 de-loose param",
-                        Forms.MessageBoxButtons.YesNo) == Forms.DialogResult.Yes)
+                    foreach (var p in _params)
                     {
-                        param = $@"{dir}\enc_regulation.bnd.dcx";
-                        if (!BND4.Is($@"{dir}\enc_regulation.bnd.dcx"))
+                        var bnd = paramBnd.Files.Find(e => Path.GetFileNameWithoutExtension(e.Name) == p.Key);
+                        if (bnd != null)
                         {
-                            // Decrypt the file
-                            paramBnd = SFUtil.DecryptDS2Regulation(param);
-
-                            // Since the file is encrypted, check for a backup. If it has none, then make one and write a decrypted one.
-                            if (!File.Exists($@"{param}.bak"))
-                            {
-                                File.Copy(param, $@"{param}.bak", true);
-                                paramBnd.Write(param);
-                            }
+                            bnd.Bytes = p.Value.Write();
                         }
                         else
                         {
-                            paramBnd = BND4.Read(param);
+                            Utils.WriteWithBackup(dir, mod, $@"Param\{p.Key}.param", p.Value);
                         }
                     }
-                }
+                };
 
-                foreach (var p in _params)
+                // Replace params in paramBND, write remaining params loosely
+                if (paramBnd.Files.Find(e => e.Name.EndsWith(".param")) == null)
                 {
-                    var bnd = paramBnd.Files.Find(e => Path.GetFileNameWithoutExtension(e.Name) == p.Key);
-                    if (bnd != null)
+                    Forms.MessageBox.Show("It appears that you are trying to save params non-loosely with an \"enc_regulation.bnd\" that has previously been saved loosely." +
+                        "\n\nWould you like to reinsert params into the bnd that were previously stripped out?", "DS2 de-loose param",
+                        Forms.MessageBoxButtons.YesNo, Forms.MessageBoxIcon.Question, (result) => 
                     {
-                        bnd.Bytes = p.Value.Write();
-                    }
-                    else
-                    {
-                        Utils.WriteWithBackup(dir, mod, $@"Param\{p.Key}.param", p.Value);
-                    }
+                        if (result == Forms.DialogResult.Yes)
+                        {
+                            param = $@"{dir}\enc_regulation.bnd.dcx";
+                            if (!BND4.Is($@"{dir}\enc_regulation.bnd.dcx"))
+                            {
+                                // Decrypt the file
+                                paramBnd = SFUtil.DecryptDS2Regulation(param);
+
+                                // Since the file is encrypted, check for a backup. If it has none, then make one and write a decrypted one.
+                                if (!File.Exists($@"{param}.bak"))
+                                {
+                                    File.Copy(param, $@"{param}.bak", true);
+                                    paramBnd.Write(param);
+                                }
+                            }
+                            else
+                            {
+                                paramBnd = BND4.Read(param);
+                            }
+                        }
+                        onRepack(paramBnd);
+                    });
                 }
+                else
+                {
+                    onRepack(paramBnd);
+                }
+                
             }
             else
             {

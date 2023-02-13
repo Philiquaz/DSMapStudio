@@ -62,11 +62,12 @@ namespace StudioCore
                     }
                     catch (JsonException e)
                     {
-                        if (MessageBox.Show($"{e.Message}\n\nReset config settings?", $"{Config_FileName} Load Error",
-                            MessageBoxButtons.OKCancel) == DialogResult.OK)
+                        MessageBox.Show($"{e.Message}\n\nReset config settings?", $"{Config_FileName} Load Error",
+                            MessageBoxButtons.OKCancel, MessageBoxIcon.Question, (res) =>
                         {
-                            Current = new CFG();
-                        }
+                            if (res == DialogResult.OK)
+                                Current = new CFG();
+                        });
                     }
                 }
                 while (Current == null);
@@ -91,11 +92,12 @@ namespace StudioCore
                     }
                     catch (JsonException e)
                     {
-                        if (MessageBox.Show($"{e.Message}\n\nReset keybinds?", $"{Keybinds_FileName} Load Error",
-                            MessageBoxButtons.OKCancel) == DialogResult.OK)
+                        MessageBox.Show($"{e.Message}\n\nReset keybinds?", $"{Keybinds_FileName} Load Error",
+                            MessageBoxButtons.OKCancel, MessageBoxIcon.Question, (res) =>
                         {
+                            if (res == DialogResult.OK)
                             KeyBindings.Current = new KeyBindings.Bindings();
-                        }
+                        });
                     }
                 }
                 while (KeyBindings.Current == null);

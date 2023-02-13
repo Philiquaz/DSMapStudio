@@ -580,15 +580,16 @@ namespace StudioCore
             };
             try
             {
-                bool success = true;
                 // Check if game exe exists
-                if (!Directory.Exists(settings.GameRoot))
+                if (Directory.Exists(settings.GameRoot))
                 {
-                    success = false;
-                    Forms.MessageBox.Show($@"Could not find game data directory for {settings.GameType}. Please select the game executable.", "Error",
-                        Forms.MessageBoxButtons.OK,
-                        Forms.MessageBoxIcon.None);
-
+                    onSuccess(true);
+                    return;
+                }
+                Forms.MessageBox.Show($@"Could not find game data directory for {settings.GameType}. Please select the game executable.", "Error",
+                    Forms.MessageBoxButtons.OK,
+                    Forms.MessageBoxIcon.None, (result) =>
+                {
                     var rbrowseDlg = new Forms.OpenFileDialog()
                     {
                         Filter = AssetLocator.GameExecutatbleFilter,
@@ -632,8 +633,7 @@ namespace StudioCore
                             throw;
                         }
                     });
-                }
-                onSuccess(success);
+                });
             }
             catch
             {
@@ -1219,44 +1219,52 @@ namespace StudioCore
                                          Forms.MessageBoxIcon.None);
                         validated = false;
                     }
+                    
+                    Action<bool> onMostlyValidated = (validated) =>
+                    {
+                        if (validated && (_newProjectOptions.settings.ProjectName == null || _newProjectOptions.settings.ProjectName == ""))
+                        {
+                            Forms.MessageBox.Show("You must specify a project name.", "Error",
+                                            Forms.MessageBoxButtons.OK,
+                                            Forms.MessageBoxIcon.None);
+                            validated = false;
+                        }
+
+                        string gameroot = Path.GetDirectoryName(_newProjectOptions.settings.GameRoot);
+                        if (_newProjectOptions.settings.GameType == GameType.Bloodborne)
+                        {
+                            gameroot = gameroot + @"\dvdroot_ps4";
+                        }
+                        if (!_assetLocator.CheckFilesExpanded(gameroot, _newProjectOptions.settings.GameType))
+                        {
+                            if (!GameNotUnpackedWarning(_newProjectOptions.settings.GameType))
+                                validated = false;
+                        }
+
+                        if (validated)
+                        {
+                            _newProjectOptions.settings.GameRoot = gameroot;
+                            _newProjectOptions.settings.Serialize($@"{_newProjectOptions.directory}\project.json");
+                            AttemptLoadProject(_newProjectOptions.settings, $@"{_newProjectOptions.directory}\project.json", true, _newProjectOptions);
+
+                            ImGui.CloseCurrentPopup();
+                        }
+                    };
                     if (validated && (Path.GetDirectoryName(_newProjectOptions.settings.GameRoot)).Equals(_newProjectOptions.directory))
                     {
-                        var message = Forms.MessageBox.Show(
+                        Forms.MessageBox.Show(
                             "Project Directory is the same as Game Directory, which allows game files to be overwritten directly.\n\n" +
                             "It's highly recommended you use the Mod Engine mod folder as your project folder instead (if possible).\n\n" +
                             "Continue and create project anyway?", "Caution",
                                          Forms.MessageBoxButtons.OKCancel,
-                                         Forms.MessageBoxIcon.None);
-                        if (message != Forms.DialogResult.OK)
-                            validated = false;
-                    }
-                    if (validated && (_newProjectOptions.settings.ProjectName == null || _newProjectOptions.settings.ProjectName == ""))
-                    {
-                        Forms.MessageBox.Show("You must specify a project name.", "Error",
-                                         Forms.MessageBoxButtons.OK,
-                                         Forms.MessageBoxIcon.None);
+                                         Forms.MessageBoxIcon.None, (result) =>
+                        {
+                            if (result == Forms.DialogResult.OK)
+                                onMostlyValidated(true);
+                        });
                         validated = false;
                     }
-
-                    string gameroot = Path.GetDirectoryName(_newProjectOptions.settings.GameRoot);
-                    if (_newProjectOptions.settings.GameType == GameType.Bloodborne)
-                    {
-                        gameroot = gameroot + @"\dvdroot_ps4";
-                    }
-                    if (!_assetLocator.CheckFilesExpanded(gameroot, _newProjectOptions.settings.GameType))
-                    {
-                        if (!GameNotUnpackedWarning(_newProjectOptions.settings.GameType))
-                            validated = false;
-                    }
-
-                    if (validated)
-                    {
-                        _newProjectOptions.settings.GameRoot = gameroot;
-                        _newProjectOptions.settings.Serialize($@"{_newProjectOptions.directory}\project.json");
-                        AttemptLoadProject(_newProjectOptions.settings, $@"{_newProjectOptions.directory}\project.json", true, _newProjectOptions);
-
-                        ImGui.CloseCurrentPopup();
-                    }
+                    onMostlyValidated(true);
                 }
                 ImGui.SameLine();
                 if (ImGui.Button("Cancel", new Vector2(120, 0) * scale))

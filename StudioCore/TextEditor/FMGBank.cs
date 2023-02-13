@@ -1245,6 +1245,7 @@ namespace StudioCore.TextEditor
 
         private static void HandleDuplicateEntries()
         {
+            /* Not supported in callback flow
             bool askedAboutDupes = false;
             bool ignoreDupes = true;
             foreach (var info in _fmgInfoBank)
@@ -1266,7 +1267,7 @@ namespace StudioCore.TextEditor
                         }
                     }
                 }
-            }
+            }*/
         }
 
         private class JsonFMG
@@ -1346,7 +1347,7 @@ namespace StudioCore.TextEditor
                         filecount++;
                     }
                 }
-                Forms.MessageBox.Show($"Exported {filecount} text files", "Finished", Forms.MessageBoxButtons.OK);
+                Forms.MessageBox.Show($"Exported {filecount} text files", "Finished", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Information);
             });
         }
 
@@ -1391,12 +1392,12 @@ namespace StudioCore.TextEditor
                         }
                         if (!success)
                         {
-                            Forms.MessageBox.Show($"Couldn't locate FMG using FMG ID `{json.FmgID}`", "Import Error", Forms.MessageBoxButtons.OK);
+                            Forms.MessageBox.Show($"Couldn't locate FMG using FMG ID `{json.FmgID}`", "Import Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Error);
                         }
                     }
                     catch (JsonReaderException e)
                     {
-                        Forms.MessageBox.Show($"{e.Message}\n\nCouldn't import '{filePath}'", "Import Error", Forms.MessageBoxButtons.OK);
+                        Forms.MessageBox.Show($"{e.Message}\n\nCouldn't import '{filePath}'", "Import Error", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Error);
                     }
                 }
 
@@ -1407,7 +1408,7 @@ namespace StudioCore.TextEditor
                 }
 
                 HandleDuplicateEntries();
-                Forms.MessageBox.Show($"Imported {filecount} text files", "Finished", Forms.MessageBoxButtons.OK);
+                Forms.MessageBox.Show($"Imported {filecount} text files", "Finished", Forms.MessageBoxButtons.OK, Forms.MessageBoxIcon.Information);
                 callback(true);
             });
         }
