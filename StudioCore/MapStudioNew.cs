@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+﻿#define NOWINFORMS
+using ImGuiNET;
 using Octokit;
 using StudioCore.Editor;
 using StudioCore.Scene;
@@ -1096,6 +1097,8 @@ namespace StudioCore
                 ImGui.SameLine();
                 ImGui.InputText("##pdir", ref _newProjectOptions.directory, 255);
                 ImGui.SameLine();
+#if NOWINFORMS
+#else                
                 if (ImGui.Button($@"{ForkAwesome.FileO}"))
                 {
                     var browseDlg = new Forms.FolderBrowserDialog();
@@ -1107,6 +1110,7 @@ namespace StudioCore
                         }
                     });
                 }
+#endif
 
                 ImGui.AlignTextToFramePadding();
                 ImGui.Text("Game Executable:   ");
@@ -1122,6 +1126,8 @@ namespace StudioCore
                 }
                 ImGui.SameLine();
                 ImGui.PushID("fd2");
+#if NOWINFORMS
+#else    
                 if (ImGui.Button($@"{ForkAwesome.FileO}"))
                 {
                     var browseDlg = new Forms.OpenFileDialog()
@@ -1140,6 +1146,7 @@ namespace StudioCore
                         }
                     });
                 }
+#endif
                 ImGui.PopID();
                 ImGui.Text($@"Detected Game:      {_newProjectOptions.settings.GameType.ToString()}");
 
