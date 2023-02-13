@@ -644,10 +644,13 @@ namespace StudioCore
             }
         }
 
+#if NOWINFORMS
+#else
         //Unhappy with this being here
         [DllImport("user32.dll", EntryPoint = "ShowWindow")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool _user32_ShowWindow(IntPtr hWnd, int nCmdShow);
+#endif
 
         // Saves modded files to a recovery directory in the mod folder on crash
         public void AttemptSaveOnCrash()
@@ -716,12 +719,15 @@ namespace StudioCore
             Editor.TaskManager.ThrowTaskExceptions();
 
             string[] commandsplit = EditorCommandQueue.GetNextCommand();
+#if NOWINFORMS
+#else
             if (commandsplit != null && commandsplit[0] == "windowFocus")
             {
                 //this is a hack, cannot grab focus except for when un-minimising
                 _user32_ShowWindow(_window.Handle, 6);
                 _user32_ShowWindow(_window.Handle, 9);
             }
+#endif
 
             ctx = Tracy.TracyCZoneN(1, "Style");
             //ImGui.BeginFrame(); // Imguizmo begin frame

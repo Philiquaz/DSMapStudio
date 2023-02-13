@@ -17,7 +17,6 @@ namespace StudioCore.Forms
     public class Forms
     {
 #if NOWINFORMS
-        //TODO
         public static string ProductVersion = "NOWINFORMSVERSION";
 #else
         public static string ProductVersion = WinForms.Application.ProductVersion;
@@ -26,10 +25,75 @@ namespace StudioCore.Forms
         public static void Exit()
         {
 #if NOWINFORMS
-            //TODO
             Environment.Exit(0);
 #else
             WinForms.Application.Exit();
+#endif
+        }
+
+
+        internal static (FolderBrowserDialog, Action<DialogResult>) fbd = (null, null);
+        internal static (OpenFileDialog, Action<DialogResult>) ofd = (null, null);
+        internal static (SaveFileDialog, Action<DialogResult>) sfd = (null, null);
+        internal static (string, string, MessageBoxButtons, MessageBoxIcon, Action<DialogResult>) mb = (null, null, MessageBoxButtons.OK, MessageBoxIcon.None, null);
+
+        public static void FormsPopups()
+        {
+            if (fbd != (null, null))
+            {
+                if (!ImGui.IsPopupOpen("FormsFolderBrowserDialog"))
+                {
+                    fbd.Item2(DialogResult.Cancel);
+                    fbd = (null, null);
+                }
+                else if (ImGui.BeginPopupModal(fbd.Item1.Description+"##FormsFolderBrowserDialog"))
+                {
+                    ImGui.Text("FBD");
+                    ImGui.EndPopup();
+                }
+            }
+            if (ofd != (null, null))
+            {
+                if (!ImGui.IsPopupOpen("FormsOpenFileDialog"))
+                {
+                    ofd.Item2(DialogResult.Cancel);
+                    ofd = (null, null);
+                }
+                else if (ImGui.BeginPopupModal(ofd.Item1.Title+"##FormsOpenFileDialog"))
+                {
+                    ImGui.Text("OFD");
+                    ImGui.EndPopup();
+                }
+            }
+            if (sfd != (null, null))
+            {
+                if (!ImGui.IsPopupOpen("FormsSaveFileDialog"))
+                {
+                    sfd.Item2(DialogResult.Cancel);
+                    sfd = (null, null);
+                }
+                else if (ImGui.BeginPopupModal(sfd.Item1.Title+"##FormsSaveFileDialog"))
+                {
+                    ImGui.Text("SFD");
+                    ImGui.EndPopup();
+                }
+            }
+            if (mb != (null, null, MessageBoxButtons.OK, MessageBoxIcon.None, null))
+            {
+                if (!ImGui.IsPopupOpen("FormsMessageBox"))
+                {
+                    mb.Item5(DialogResult.Cancel);
+                    mb = (null, null, MessageBoxButtons.OK, MessageBoxIcon.None, null);
+                }
+                else if (ImGui.BeginPopupModal(mb.Item1+"##FormsMessageBox"))
+                {
+                    ImGui.Text("MB");
+                    ImGui.EndPopup();
+                }
+            }
+#if NOWINFORMS
+
+#else
 #endif
         }
     }
@@ -44,8 +108,8 @@ namespace StudioCore.Forms
         public void ShowDialog(Action<DialogResult> Callback)
         {
 #if NOWINFORMS
-            //TODO
-            return DialogResult.Cancel;
+            Forms.fbd = (this, Callback);
+            ImGui.OpenPopup("FormsFolderBrowserDialog");
 #else
             WinForms.FolderBrowserDialog dlg = new WinForms.FolderBrowserDialog();
 
@@ -82,8 +146,8 @@ namespace StudioCore.Forms
         public void ShowDialog(Action<DialogResult> Callback)
         {
 #if NOWINFORMS
-            //TODO
-            return DialogResult.Cancel;
+            Forms.ofd = (this, Callback);
+            ImGui.OpenPopup("FormsOpenFileDialog");
 #else
             WinForms.OpenFileDialog dlg = new WinForms.OpenFileDialog();
 
@@ -127,8 +191,8 @@ namespace StudioCore.Forms
         public void ShowDialog(Action<DialogResult> Callback)
         {
 #if NOWINFORMS
-            //TODO
-            return DialogResult.Cancel;
+            Forms.sfd = (this, Callback);
+            ImGui.OpenPopup("FormsSaveFileDialog");
 #else
             WinForms.SaveFileDialog dlg = new WinForms.SaveFileDialog();
 
@@ -162,8 +226,8 @@ namespace StudioCore.Forms
         public static DialogResult Show(string message, string title, MessageBoxButtons buttons, MessageBoxIcon icon = MessageBoxIcon.None)
         {
 #if NOWINFORMS
-            //TODO
-            return DialogResult.Cancel;
+            Forms.mb = (message, title, buttons, icon, Callback);
+            ImGui.OpenPopup("FormsMessageBox");
 #else
             WinForms.MessageBoxButtons btn = buttons switch
             {
