@@ -733,6 +733,7 @@ namespace StudioCore
             //ImGui.BeginFrame(); // Imguizmo begin frame
             ApplyStyle();
             var vp = ImGui.GetMainViewport();
+            Forms.Forms.FormsPopups();
             ImGui.SetNextWindowPos(vp.Pos);
             ImGui.SetNextWindowSize(vp.Size);
             ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
