@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
+    <TargetFramework>net7.0</TargetFramework>
     <Authors>Katalash</Authors>
     <Version>1.07.0</Version>
     <ApplicationIcon>icon.ico</ApplicationIcon>
