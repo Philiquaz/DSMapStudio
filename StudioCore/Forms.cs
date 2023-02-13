@@ -41,56 +41,149 @@ namespace StudioCore.Forms
         public static void FormsPopups()
         {
 #if NOWINFORMS
+            bool open = true;
             if (fbd != (null, null))
             {
-                if (!ImGui.IsPopupOpen("FormsFolderBrowserDialog"))
+                ImGui.OpenPopup("FormsFolderBrowserDialog");
+                if (ImGui.BeginPopupModal("FormsFolderBrowserDialog", ref open, ImGuiWindowFlags.AlwaysAutoResize))
                 {
-                    fbd.Item2(DialogResult.Cancel);
-                    fbd = (null, null);
-                }
-                else if (ImGui.BeginPopupModal(fbd.Item1.Description+"##FormsFolderBrowserDialog"))
-                {
-                    ImGui.Text("FBD");
+                    if (fbd.Item1.Description != null)
+                        ImGui.Text(fbd.Item1.Description);
+                    ImGui.Text("Open Folder...");
+                    ImGui.InputText("##FormsFolderBrowserDialogInput", ref fbd.Item1.SelectedPath, 1024);
+                    if (ImGui.Button("Open"))
+                    {
+                        var func = fbd.Item2;
+                        fbd = (null, null);
+                        func(DialogResult.OK);
+                    }
+                    ImGui.SameLine();
+                    if (ImGui.Button("Cancel"))
+                    {
+                        var func = fbd.Item2;
+                        fbd = (null, null);
+                        func(DialogResult.Cancel);
+                    }
                     ImGui.EndPopup();
+                }
+                else
+                {
+                    var func = fbd.Item2;
+                    fbd = (null, null);
+                    func(DialogResult.Cancel);
                 }
             }
             if (ofd != (null, null))
             {
-                if (!ImGui.IsPopupOpen("FormsOpenFileDialog"))
+                ImGui.OpenPopup("FormsOpenFileDialog");
+                if (ImGui.BeginPopupModal("FormsOpenFileDialog", ref open, ImGuiWindowFlags.AlwaysAutoResize))
                 {
-                    ofd.Item2(DialogResult.Cancel);
-                    ofd = (null, null);
-                }
-                else if (ImGui.BeginPopupModal(ofd.Item1.Title+"##FormsOpenFileDialog"))
-                {
-                    ImGui.Text("OFD");
+                    if (ofd.Item1.Title != null)
+                        ImGui.Text(ofd.Item1.Title);
+                    ImGui.Text("Open File...");
+                    ImGui.InputText("##FormsOpenFileDialogInput", ref ofd.Item1.FileName, 1024);
+                    if (ImGui.Button("Open"))
+                    {
+                        var func = ofd.Item2;
+                        ofd = (null, null);
+                        func(DialogResult.OK);
+                    }
+                    ImGui.SameLine();
+                    if (ImGui.Button("Cancel"))
+                    {
+                        var func = ofd.Item2;
+                        ofd = (null, null);
+                        func(DialogResult.Cancel);
+                    }
                     ImGui.EndPopup();
+                }
+                else
+                {
+                    var func = ofd.Item2;
+                    ofd = (null, null);
+                    func(DialogResult.Cancel);
                 }
             }
             if (sfd != (null, null))
             {
-                if (!ImGui.IsPopupOpen("FormsSaveFileDialog"))
+                ImGui.OpenPopup("FormsSaveFileDialog");
+                if (ImGui.BeginPopupModal("FormsSaveFileDialog", ref open, ImGuiWindowFlags.AlwaysAutoResize))
                 {
-                    sfd.Item2(DialogResult.Cancel);
-                    sfd = (null, null);
-                }
-                else if (ImGui.BeginPopupModal(sfd.Item1.Title+"##FormsSaveFileDialog"))
-                {
-                    ImGui.Text("SFD");
+                    if (sfd.Item1.Title != null)
+                        ImGui.Text(sfd.Item1.Title);
+                    ImGui.Text("Save File...");
+                    ImGui.InputText("##FormsSaveFileDialogInput", ref sfd.Item1.FileName, 1024);
+                    if (ImGui.Button("Save"))
+                    {
+                        var func = sfd.Item2;
+                        sfd = (null, null);
+                        func(DialogResult.OK);
+                    }
+                    ImGui.SameLine();
+                    if (ImGui.Button("Cancel"))
+                    {
+                        var func = sfd.Item2;
+                        sfd = (null, null);
+                        func(DialogResult.Cancel);
+                    }
                     ImGui.EndPopup();
+                }
+                else
+                {
+                    var func = sfd.Item2;
+                    sfd = (null, null);
+                    func(DialogResult.Cancel);
                 }
             }
             if (mb != (null, null, MessageBoxButtons.OK, MessageBoxIcon.None, null))
             {
-                if (!ImGui.IsPopupOpen("FormsMessageBox"))
+                ImGui.OpenPopup("FormsMessageBox");
+                if (ImGui.BeginPopupModal("FormsMessageBox", ref open, ImGuiWindowFlags.AlwaysAutoResize))
                 {
-                    mb.Item5(DialogResult.Cancel);
-                    mb = (null, null, MessageBoxButtons.OK, MessageBoxIcon.None, null);
-                }
-                else if (ImGui.BeginPopupModal(mb.Item1+"##FormsMessageBox"))
-                {
-                    ImGui.Text("MB");
+                    ImGui.Text(mb.Item2);
+                    ImGui.Text(mb.Item1);
+                    if (mb.Item3 == MessageBoxButtons.YesNo)
+                    {
+                        if (ImGui.Button("Yes"))
+                        {
+                            var func = mb.Item5;
+                            mb = (null, null, MessageBoxButtons.OK, MessageBoxIcon.None, null);
+                            func(DialogResult.Yes);
+                        }
+                            ImGui.SameLine();
+                        if (ImGui.Button("No"))
+                        {
+                            var func = mb.Item5;
+                            mb = (null, null, MessageBoxButtons.OK, MessageBoxIcon.None, null);
+                            func(DialogResult.No);
+                        }
+                    }
+                    else
+                    {
+                        if (ImGui.Button("OK"))
+                        {
+                            var func = mb.Item5;
+                            mb = (null, null, MessageBoxButtons.OK, MessageBoxIcon.None, null);
+                            func(DialogResult.OK);
+                        }
+                        if (mb.Item3 == MessageBoxButtons.OKCancel)
+                        {
+                            ImGui.SameLine();
+                            if (ImGui.Button("Cancel"))
+                            {
+                            var func = mb.Item5;
+                            mb = (null, null, MessageBoxButtons.OK, MessageBoxIcon.None, null);
+                            func(DialogResult.Cancel);
+                            }
+                        }
+                    }
                     ImGui.EndPopup();
+                }
+                else
+                {
+                    var func = mb.Item5;
+                    mb = (null, null, MessageBoxButtons.OK, MessageBoxIcon.None, null);
+                    func(DialogResult.Cancel);
                 }
             }
 #else
@@ -100,7 +193,7 @@ namespace StudioCore.Forms
 
     public class FolderBrowserDialog
     {
-        public string Description = null;
+        public string Description = "";
         public bool UseDescriptionForTitle = false;
 
         public string SelectedPath;
@@ -109,7 +202,6 @@ namespace StudioCore.Forms
         {
 #if NOWINFORMS
             Forms.fbd = (this, Callback);
-            ImGui.OpenPopup("FormsFolderBrowserDialog");
 #else
             WinForms.FolderBrowserDialog dlg = new WinForms.FolderBrowserDialog();
 
@@ -133,21 +225,23 @@ namespace StudioCore.Forms
     }
     public class OpenFileDialog
     {
-        public string Title = null;
-        public string Filter = null;
+        public string Title = "";
+        public string Filter = "";
         public bool ValidateNames = false;
         public bool CheckFileExists = false;
         public bool CheckPathExists = false;
         public bool Multiselect = false;
 
-        public string FileName;
-        public string[] FileNames;
+        public string FileName = "";
+        public string[] FileNames
+        {
+            get => new string[]{FileName};
+        }
 
         public void ShowDialog(Action<DialogResult> Callback)
         {
 #if NOWINFORMS
             Forms.ofd = (this, Callback);
-            ImGui.OpenPopup("FormsOpenFileDialog");
 #else
             WinForms.OpenFileDialog dlg = new WinForms.OpenFileDialog();
 
@@ -180,8 +274,8 @@ namespace StudioCore.Forms
     }
     public class SaveFileDialog
     {
-        public string Title = null;
-        public string Filter = null;
+        public string Title = "";
+        public string Filter = "";
         public bool ValidateNames = false;
         public bool CheckFileExists = false;
         public bool CheckPathExists = false;
@@ -192,7 +286,6 @@ namespace StudioCore.Forms
         {
 #if NOWINFORMS
             Forms.sfd = (this, Callback);
-            ImGui.OpenPopup("FormsSaveFileDialog");
 #else
             WinForms.SaveFileDialog dlg = new WinForms.SaveFileDialog();
 
@@ -227,7 +320,6 @@ namespace StudioCore.Forms
         {
 #if NOWINFORMS
             Forms.mb = (message, title, buttons, icon, Callback);
-            ImGui.OpenPopup("FormsMessageBox");
 #else
             WinForms.MessageBoxButtons btn = buttons switch
             {
