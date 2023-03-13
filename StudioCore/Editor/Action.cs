@@ -164,6 +164,8 @@ namespace StudioCore.Editor
 
         public override ActionEvent Execute()
         {
+            int lastID = int.MinValue;
+            int lastIndex = 0;
             foreach (var row in Clonables)
             {
                 var newrow = new Param.Row(row);
@@ -186,13 +188,15 @@ namespace StudioCore.Editor
                         else
                         {
                             newrow.Name = row.Name != null ? row.Name + "_1" : "";
-                            int newID = row.ID + 1;
+                            int newID = lastID >= newrow.ID ? lastID + 1 : newrow.ID + 1; // If the last ID overshot, start from there
                             while (Param[newID] != null)
                             {
                                 newID++;
                             }
                             newrow.ID = newID;
-                            Param.InsertRow(Param.IndexOfRow(Param[(int)newID - 1]) + 1, newrow);
+                            lastID = newrow.ID;
+                            lastIndex = Param.IndexOfRow(Param[(int)newID - 1]) + 1;
+                            Param.InsertRow(lastIndex, newrow);
                         }
                     }
                     if (Param[(int)row.ID] == null)
@@ -204,13 +208,16 @@ namespace StudioCore.Editor
                         }
                         else
                         {
-                            int index = 0;
-                            foreach (Param.Row r in Param.Rows)
+                            int index = newrow.ID >= lastID ? lastIndex : 0; // If the last ID overshot, start from there
+                            for (; index < Param.Rows.Count; index++)
                             {
+                                Param.Row r = Param.Rows[index];
                                 if (r.ID > newrow.ID)
                                     break;
                                 index++;
                             }
+                            lastID = newrow.ID;
+                            lastIndex = index;
                             Param.InsertRow(index, newrow);
                         }
                     }
