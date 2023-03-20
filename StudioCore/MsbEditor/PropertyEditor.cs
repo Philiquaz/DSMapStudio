@@ -472,7 +472,7 @@ namespace StudioCore.MsbEditor
             int id = 0;
 
             // This should be rewritten somehow it's super ugly
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.8f, 0.8f, 0.8f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.MSB_EDITOR_PARAM_HEADER_COLOUR);
             var nameProp = row.GetType().GetProperty("Name");
             var idProp = row.GetType().GetProperty("ID");
             PropEditorPropInfoRow(row, nameProp, "Name", ref id, null);
@@ -990,7 +990,7 @@ namespace StudioCore.MsbEditor
             float scale = ImGuiRenderer.GetUIScale();
             var entSelection = selection.GetFilteredSelection<Entity>();
 
-            ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0.145f, 0.145f, 0.149f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, Style.Current.MSB_BG_COLOUR);
             ImGui.SetNextWindowSize(new Vector2(350, h - 80) * scale, ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowPos(new Vector2(w - 370, 20) * scale, ImGuiCond.FirstUseEver);
             ImGui.Begin($@"Properties##{id}");
@@ -1010,9 +1010,9 @@ namespace StudioCore.MsbEditor
                     }
                     else
                     {
-                        ImGui.TextColored(new Vector4(0.5f, 1.0f, 0.0f, 1.0f), " Editing Multiple Objects.\n Changes will be applied to all selected objects.");
+                        ImGui.TextColored(Style.Current.MSB_PROPEDIT_MULTIOBJECT_COLOUR, " Editing Multiple Objects.\n Changes will be applied to all selected objects.");
                         ImGui.Separator();
-                        ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.0f, 0.5f, 0.0f, 0.1f));
+                        ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.MSB_PROPEDIT_MULTIOBJECT_BG_COLOUR);
                         ImGui.BeginChild("MSB_EditingMultipleObjsChild");
                         PropEditorGeneric(selection, entSelection);
                         ImGui.PopStyleColor();

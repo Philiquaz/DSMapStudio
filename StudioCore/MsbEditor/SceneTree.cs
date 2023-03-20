@@ -161,7 +161,7 @@ namespace StudioCore.MsbEditor
                 ImGui.SetNextItemWidth(100);
                 if (_chaliceLoadError)
                 {
-                    ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.8f, 0.2f, 0.2f, 1.0f));
+                    ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.MSB_CHALICE_ERROR_BG_COLOUR);
                 }
                 if (ImGui.InputText("##chalicename", ref pname, 12))
                 {
@@ -335,8 +335,8 @@ namespace StudioCore.MsbEditor
                 bool visible = e.EditorVisible;
                 ImGui.SameLine();
                 ImGui.SetCursorPosX(ImGui.GetWindowContentRegionMax().X - 18.0f * ImGuiRenderer.GetUIScale());
-                ImGui.PushStyleColor(ImGuiCol.Text, visible ? new Vector4(1.0f, 1.0f, 1.0f, 1.0f)
-                    : new Vector4(0.6f, 0.6f, 0.6f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.Text, visible ? Style.Current.MSB_ITEM_VISIBLE_COLOUR
+                    : Style.Current.MSB_ITEM_INVISIBLE_COLOUR);
                 ImGui.TextWrapped(visible ? ForkAwesome.Eye : ForkAwesome.EyeSlash);
                 ImGui.PopStyleColor();
                 if (ImGui.IsItemClicked(0))
@@ -523,8 +523,8 @@ namespace StudioCore.MsbEditor
                                             bool visible = parent.EditorVisible;
                                             ImGui.SameLine();
                                             ImGui.SetCursorPosX(ImGui.GetWindowContentRegionMax().X - 18.0f * ImGuiRenderer.GetUIScale());
-                                            ImGui.PushStyleColor(ImGuiCol.Text, visible ? new Vector4(1.0f, 1.0f, 1.0f, 1.0f)
-                                                : new Vector4(0.6f, 0.6f, 0.6f, 1.0f));
+                                            ImGui.PushStyleColor(ImGuiCol.Text, visible ? Style.Current.MSB_ITEM_VISIBLE_COLOUR
+                                                : Style.Current.MSB_ITEM_INVISIBLE_COLOUR);
                                             ImGui.TextWrapped(visible ? ForkAwesome.Eye : ForkAwesome.EyeSlash);
                                             ImGui.PopStyleColor();
                                             if (ImGui.IsItemClicked(0))
@@ -544,8 +544,8 @@ namespace StudioCore.MsbEditor
                                             bool visible = parent.EditorVisible;
                                             ImGui.SameLine();
                                             ImGui.SetCursorPosX(ImGui.GetWindowContentRegionMax().X - 18.0f * ImGuiRenderer.GetUIScale());
-                                            ImGui.PushStyleColor(ImGuiCol.Text, visible ? new Vector4(1.0f, 1.0f, 1.0f, 1.0f)
-                                                : new Vector4(0.6f, 0.6f, 0.6f, 1.0f));
+                                            ImGui.PushStyleColor(ImGuiCol.Text, visible ? Style.Current.MSB_ITEM_VISIBLE_COLOUR
+                                                : Style.Current.MSB_ITEM_INVISIBLE_COLOUR);
                                             ImGui.TextWrapped(visible ? ForkAwesome.Eye : ForkAwesome.EyeSlash);
                                             ImGui.PopStyleColor();
                                             if (ImGui.IsItemClicked(0))
@@ -587,7 +587,7 @@ namespace StudioCore.MsbEditor
         {
             float scale = ImGuiRenderer.GetUIScale();
 
-            ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0.145f, 0.145f, 0.149f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.ChildBg, Style.Current.MSB_BG_COLOUR);
             if (_configuration == Configuration.MapEditor)
             {
                 ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0.0f, 0.0f));
@@ -689,9 +689,9 @@ namespace StudioCore.MsbEditor
                     {
                         ImGui.SameLine();
                         if (metaName.StartsWith("--")) //marked as normally unused (use red text)
-                            ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), @$"<{metaName.Replace("--","")}>");
+                            ImGui.TextColored(Style.Current.MSB_MAP_ALIAS_UNUSED_COLOUR, @$"<{metaName.Replace("--","")}>");
                         else
-                            ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), @$"<{metaName}>");
+                            ImGui.TextColored(Style.Current.MSB_MAP_ALIAS_COLOUR, @$"<{metaName}>");
                     }
                     ImGui.EndGroup();
                     if (_selection.ShouldGoto(mapRoot) || _selection.ShouldGoto(mapRef))

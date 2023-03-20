@@ -107,7 +107,7 @@ namespace StudioCore.TextEditor
                 var folders = FMGBank.AssetLocator.GetMsgLanguages();
                 if (folders.Count == 0)
                 {
-                    ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "Cannot find language folders.");
+                    ImGui.TextColored(Style.Current.TEXT_WARNING_COLOUR, "Cannot find language folders.");
                 }
                 else
                 {

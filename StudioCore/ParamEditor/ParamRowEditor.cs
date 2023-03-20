@@ -326,7 +326,7 @@ namespace StudioCore.ParamEditor
                 ImGui.NextColumn();
 
             // This should be rewritten somehow it's super ugly
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.8f, 0.8f, 1.0f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PARAM_EDITOR_PARAM_HEADER_COLOUR);
             var nameProp = row.GetType().GetProperty("Name");
             var idProp = row.GetType().GetProperty("ID");
             PropEditorPropInfoRow(bank, row, vrow, auxRows, crow, nameProp, "Name", ref id);
@@ -527,13 +527,13 @@ namespace StudioCore.ParamEditor
             bool matchDefault = nullableCell?.Def.Default != null && nullableCell.Value.Def.Default.Equals(oldval);
             bool isRef = (CFG.Current.Param_HideReferenceRows == false && (RefTypes != null || FmgRef != null)) || (CFG.Current.Param_HideEnums == false && Enum != null) || VirtualRef != null;
             if (conflict)
-                ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.25f, 0.2f, 0.2f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.PARAM_CONFLICT_BG_COLOUR);
             else if (diffVanilla)
-                ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.2f, 0.22f, 0.2f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.PARAM_MODIFIED_BG_COLOUR);
             if (isRef)
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0.5f, 1.0f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.REFERENCE_ANY_DATA_COLOUR);
             else if (matchDefault)
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.75f, 0.75f, 0.75f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PARAM_DEFAULT_DATA_COLOUR);
             (changed, committed) = PropertyRow(propType, oldval, ref newval, IsBool);
 
             if (isRef || matchDefault) //if diffVanilla, remove styling later
@@ -560,10 +560,10 @@ namespace StudioCore.ParamEditor
             }
             if (conflict || diffVanilla)
                 ImGui.PopStyleColor();
-            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.180f, 0.180f, 0.196f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.9f, 0.9f, 0.9f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.PARAM_AUX_BG_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PARAM_AUX_COLOUR);
             if (conflict)
-                ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.25f, 0.2f, 0.2f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.PARAM_AUX_CONFLICT_COLOUR);
             if (CFG.Current.Param_ShowVanillaParams)
             {
                 ImGui.NextColumn();
@@ -574,7 +574,7 @@ namespace StudioCore.ParamEditor
                 for (int i=0; i<auxVals.Count; i++)
                 {
                     if (!conflict && diffAuxVanilla[i])
-                        ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.2f, 0.2f, 0.236f, 1.0f));
+                        ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.PARAM_MERGEABLE_BG_COLOUR);
                     ImGui.NextColumn();
                     AdditionalColumnValue(auxVals[i], propType, bank, RefTypes, FmgRef, row, Enum, i.ToString());
                     if (!conflict && diffAuxVanilla[i])
@@ -586,7 +586,7 @@ namespace StudioCore.ParamEditor
             if (compareval != null)
             {
                 if(diffCompare)
-                    ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.2f, 0.2f, 0.236f, 1.0f));
+                    ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.PARAM_MERGEABLE_BG_COLOUR);
                 ImGui.NextColumn();
                 AdditionalColumnValue(compareval, propType, bank, RefTypes, FmgRef, row, Enum, "compRow");
                 if (diffCompare)
@@ -661,7 +661,7 @@ namespace StudioCore.ParamEditor
             {
                 if (CFG.Current.Param_ShowAltNames == true && CFG.Current.Param_AlwaysShowOriginalName == false)
                 {
-                    ImGui.TextColored(new Vector4(1f, .7f, .4f, 1f), originalName);
+                    ImGui.TextColored(Style.Current.PARAM_TRUE_NAME_COLOUR, originalName);
                     ImGui.Separator();
                 }
                 if (ImGui.MenuItem("Add to Searchbar"))

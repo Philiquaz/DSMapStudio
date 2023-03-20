@@ -360,7 +360,7 @@ namespace StudioCore.MsbEditor
         {
             ImGui.Text("Duplicate selection to specific map");
             ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1.0f, 1.0f, 1.0f, 0.5f), $" <{KeyBindings.Current.Map_DuplicateToMap.HintText}>");
+            ImGui.TextColored(Style.Current.MSB_DUPLICATION_HINT_COLOUR, $" <{KeyBindings.Current.Map_DuplicateToMap.HintText}>");
 
             if (ImGui.BeginCombo("Targeted Map", _dupeSelectionTargetedMap.Item1))
             {

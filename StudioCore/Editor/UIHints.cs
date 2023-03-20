@@ -147,7 +147,7 @@ Some common tools for mapstudio include:
             // Even worse of a hack than it was before. eat my shorts (all of this should be redone)
             if (isRowHint)
             {
-                ImGui.TextColored(new Vector4(0.6f, 0.6f, 1.0f, 1f), "?");
+                ImGui.TextColored(Style.Current.HINT_ICON_COLOUR, "?");
                 if (ImGui.BeginPopupContextItem(id))
                 {
                     if (ParamEditor.ParamEditorScreen.EditorMode && canEdit) //remove this, editor mode should be called earlier

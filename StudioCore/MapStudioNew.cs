@@ -440,34 +440,34 @@ namespace StudioCore
             var style = ImGui.GetStyle();
 
             // Colors
-            ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.176f, 0.176f, 0.188f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Style.Current.PRIMARY_BG_COLOUR);
             //ImGui.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0.145f, 0.145f, 0.149f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.PopupBg, new Vector4(0.106f, 0.106f, 0.110f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0.247f, 0.247f, 0.275f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.200f, 0.200f, 0.216f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, new Vector4(0.247f, 0.247f, 0.275f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.FrameBgActive, new Vector4(0.200f, 0.200f, 0.216f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.TitleBg, new Vector4(0.176f, 0.176f, 0.188f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, new Vector4(0.176f, 0.176f, 0.188f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.MenuBarBg, new Vector4(0.176f, 0.176f, 0.188f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.ScrollbarBg, new Vector4(0.243f, 0.243f, 0.249f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, new Vector4(0.408f, 0.408f, 0.408f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, new Vector4(0.635f, 0.635f, 0.635f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive, new Vector4(1.000f, 1.000f, 1.000f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(1.000f, 1.000f, 1.000f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.SliderGrab, new Vector4(0.635f, 0.635f, 0.635f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.SliderGrabActive, new Vector4(1.000f, 1.000f, 1.000f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.176f, 0.176f, 0.188f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.247f, 0.247f, 0.275f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.200f, 0.600f, 1.000f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(0.000f, 0.478f, 0.800f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new Vector4(0.247f, 0.247f, 0.275f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.HeaderActive, new Vector4(0.161f, 0.550f, 0.939f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.Tab, new Vector4(0.176f, 0.176f, 0.188f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.TabHovered, new Vector4(0.110f, 0.592f, 0.918f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.TabActive, new Vector4(0.200f, 0.600f, 1.000f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.TabUnfocused, new Vector4(0.176f, 0.176f, 0.188f, 1.0f));
-            ImGui.PushStyleColor(ImGuiCol.TabUnfocusedActive, new Vector4(0.247f, 0.247f, 0.275f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.PopupBg, Style.Current.HIGHLIGHT_BG_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.Border, Style.Current.BORDER_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.FRAME_BG_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.FrameBgHovered, Style.Current.ELEMENT_HOVERED_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.FrameBgActive, Style.Current.FRAME_BG_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.TitleBg, Style.Current.SECONDARY_BG_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, Style.Current.SECONDARY_BG_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.MenuBarBg, Style.Current.SECONDARY_BG_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarBg, Style.Current.SCROLLBAR_BG_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrab, Style.Current.SCROLLBAR_GRAB_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabHovered, Style.Current.SLIDE_GRAB_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.ScrollbarGrabActive, Style.Current.SLIDE_ACTIVE_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.CheckMark, Style.Current.CHECKMARK_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.SliderGrab, Style.Current.SLIDE_GRAB_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.SliderGrabActive, Style.Current.SLIDE_ACTIVE_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.Button, Style.Current.TAB_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, Style.Current.ELEMENT_HOVERED_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, Style.Current.ELEMENT_ACTIVE_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.Header, Style.Current.HEADER_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Style.Current.ELEMENT_HOVERED_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.HeaderActive, Style.Current.HEADER_ACTIVE_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.Tab, Style.Current.TAB_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.TabHovered, Style.Current.TAB_HOVERED_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.TabActive, Style.Current.ELEMENT_ACTIVE_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.TabUnfocused, Style.Current.TAB_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.TabUnfocusedActive, Style.Current.ELEMENT_HOVERED_COLOUR);
 
             // Sizes
             ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1.0f);
@@ -721,7 +721,7 @@ namespace StudioCore
             flags |= ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.MenuBar;
             flags |= ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoNavFocus;
             flags |= ImGuiWindowFlags.NoBackground;
-            ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Style.Current.REAL_BG_COLOUR);
             if (ImGui.Begin("DockSpace_W", flags))
             {
                 //Console.WriteLine("hi");
@@ -987,7 +987,7 @@ namespace StudioCore
 
                 if (programUpdateAvailable)
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+                    ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.UPDATE_COLOUR);
                     if (ImGui.Button("Update Available"))
                     {
                         Process myProcess = new();
@@ -1009,10 +1009,10 @@ namespace StudioCore
 
                 if (TaskManager.warningList.Count > 0)
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0f, 0f, 1.0f));
+                    ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.WARNING_COLOUR);
                     if (ImGui.BeginMenu("!! WARNINGS !!"))
                     {
-                        ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+                        ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.WARNING_HINT_COLOUR);
                         ImGui.Text("Click warnings to remove them from list");
                         if (ImGui.Button("Remove All Warnings"))
                             TaskManager.warningList.Clear();
@@ -1264,7 +1264,7 @@ namespace StudioCore
                 ImGui.SetNextWindowFocus();
             }
             ctx = Tracy.TracyCZoneN(1, "Editor");
-            ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Style.Current.REAL_BG_COLOUR);
             if (ImGui.Begin("Map Editor"))
             {
                 ImGui.PopStyleColor(1);
@@ -1283,7 +1283,7 @@ namespace StudioCore
             }
 
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0.0f, 0.0f));
-            ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Style.Current.REAL_BG_COLOUR);
             if (ImGui.Begin("Model Editor"))
             {
                 ImGui.PopStyleColor(1);
@@ -1401,8 +1401,8 @@ namespace StudioCore
                 return;
 
             ImGui.SetNextWindowSize(new Vector2(900.0f, 800.0f), ImGuiCond.FirstUseEver);
-            ImGui.PushStyleColor(ImGuiCol.WindowBg, new Vector4(0f, 0f, 0f, 0.98f));
-            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, new Vector4(0.25f, 0.25f, 0.25f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.WindowBg, Style.Current.SETTINGS_BG_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, Style.Current.SETTINGS_TITLE_COLOUR);
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(10.0f, 10.0f));
             ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(20.0f, 10.0f));
             ImGui.PushStyleVar(ImGuiStyleVar.IndentSpacing, 20.0f);
@@ -1410,7 +1410,7 @@ namespace StudioCore
             if (ImGui.Begin("Settings Menu##Popup", ref settingsMenuOpen, ImGuiWindowFlags.NoDocking))
             {
                 ImGui.BeginTabBar("#SettingsMenuTabBar");
-                ImGui.PushStyleColor(ImGuiCol.Header, new Vector4(0.3f, 0.3f, 0.6f, 0.4f));
+                ImGui.PushStyleColor(ImGuiCol.Header, Style.Current.SETTINGS_HEADER_COLOUR);
                 ImGui.PushItemWidth(300f);
 
                 //

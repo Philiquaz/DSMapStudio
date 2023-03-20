@@ -36,7 +36,7 @@ namespace StudioCore.Editor
             if (CFG.Current.Param_HideReferenceRows == false) //Move preference
             {
                 ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.REFERENCE_PARAM_LABEL_COLOUR);
                 ImGui.TextUnformatted($@"  <");
                 List<string> inactiveRefs = new List<string>();
                 bool first = true;
@@ -59,7 +59,7 @@ namespace StudioCore.Editor
                     }
                 }
 
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.REFERENCE_PARAM_LABEL_DISABLED_COLOUR);
                 foreach (string inactive in inactiveRefs)
                 {
                     ImGui.SameLine();
@@ -84,7 +84,7 @@ namespace StudioCore.Editor
             if (CFG.Current.Param_HideReferenceRows == false) //Move preference
             {
                 ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.REFERENCE_FMG_LABEL_COLOUR);
                 ImGui.TextUnformatted($@"  [");
                 ImGui.SameLine();
                 ImGui.TextUnformatted(fmgRef);
@@ -103,7 +103,7 @@ namespace StudioCore.Editor
             // May span lines
             List<(string, Param.Row, string)> matches = resolveRefs(bank, paramRefs, context, oldval);
             bool entryFound = matches.Count > 0;
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0.5f, 0.5f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.REFERENCE_PARAM_VALUE_COLOUR);
             ImGui.BeginGroup();
             foreach ((string param, Param.Row row, string adjName) in matches)
             {
@@ -112,7 +112,7 @@ namespace StudioCore.Editor
             ImGui.PopStyleColor();
             if (!entryFound)
             {
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.REFERENCE_PARAM_VALUE_INVALID_COLOUR);
                 ImGui.TextUnformatted("___");
                 ImGui.PopStyleColor();
             }
@@ -179,7 +179,7 @@ namespace StudioCore.Editor
             if (fmgInfo == null)
                 return;
             FMG.Entry entry = fmgInfo.GetPatchedEntries().Find((x) => x.ID == (int)oldval);
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0.5f, 0.5f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.REFERENCE_FMG_VALUE_COLOUR);
             if (entry == null || entry.Text == null || entry.Text.Trim().Equals(""))
                 ImGui.TextUnformatted("%null%");
             else
@@ -190,14 +190,14 @@ namespace StudioCore.Editor
         {
             if (enumName != null && CFG.Current.Param_HideEnums == false) //Move preference
             {
-                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 0.0f, 1.0f));
+                ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.REFERENCE_ENUM_LABEL_COLOUR);
                 ImGui.TextUnformatted($@"  {enumName}");
                 ImGui.PopStyleColor();
             }
         }
         public static void EnumValueText(Dictionary<string, string> enumValues, string value)
         {
-            ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 0.5f, 0.5f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.REFERENCE_ENUM_VALUE_COLOUR);
             ImGui.TextUnformatted(enumValues.GetValueOrDefault(value, "Not Enumerated"));
             ImGui.PopStyleColor();
         }

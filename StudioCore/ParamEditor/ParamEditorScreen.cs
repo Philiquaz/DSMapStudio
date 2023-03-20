@@ -41,8 +41,6 @@ namespace StudioCore.ParamEditor
 
     public class FMGItemParamDecorator : IParamDecorator
     {
-        private static Vector4 FMGLINKCOLOUR = new Vector4(1.0f, 1.0f, 0.0f, 1.0f);
-
         private FMGBank.FmgEntryCategory _category = FMGBank.FmgEntryCategory.None;
 
         private Dictionary<int, FMG.Entry> _entryCache = new Dictionary<int, FMG.Entry>();
@@ -78,7 +76,7 @@ namespace StudioCore.ParamEditor
             if (entry != null)
             {
                 ImGui.SameLine();
-                ImGui.PushStyleColor(ImGuiCol.Text, FMGLINKCOLOUR);
+                ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.REFERENCE_FMG_LABEL_COLOUR);
                 ImGui.TextUnformatted($@" <{entry.Text}>");
                 ImGui.PopStyleColor();
             }
@@ -531,7 +529,7 @@ namespace StudioCore.ParamEditor
                 if (ImGui.BeginMenu("Hot Reload Params"))
                 {
 
-                    ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), "WARNING: Hot Reloader only works for existing row entries.\nGame must be restarted for new rows and modified row IDs.");
+                    ImGui.TextColored(Style.Current.PARAM_HOTRELOAD_DISCLAIM_COLOUR, "WARNING: Hot Reloader only works for existing row entries.\nGame must be restarted for new rows and modified row IDs.");
                     ImGui.Separator();
 
                     bool canHotReload = ParamReloader.CanReloadMemoryParams(ParamBank.PrimaryBank, _projectSettings);
@@ -697,7 +695,7 @@ namespace StudioCore.ParamEditor
                     && ParamBank.PrimaryBank.ParamVersion < ParamBank.VanillaBank.ParamVersion
                     && ParamBank.VanillaBank.ParamVersion <= ParamUpgradeER_TargetWhitelist_Threshold)
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.0f, 1f, 0f, 1.0f));
+                    ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PARAM_UPGRADE_COLOUR);
                     if (ImGui.Button("Upgrade Params"))
                     {
                         var message = System.Windows.Forms.MessageBox.Show(
@@ -1486,11 +1484,6 @@ namespace StudioCore.ParamEditor
 
     public class ParamEditorView
     {
-        private static Vector4 AUXCONFLICTCOLOUR = new Vector4(1,0.7f,0.7f,1);
-        private static Vector4 AUXADDEDCOLOUR = new Vector4(0.7f,0.7f,1,1);
-        private static Vector4 PRIMARYCHANGEDCOLOUR = new Vector4(0.7f,1,0.7f,1);
-        private static Vector4 ALLVANILLACOLOUR = new Vector4(0.9f,0.9f,0.9f,1);
-
         private ParamEditorScreen _paramEditor;
         internal int _viewIndex;
         private int _gotoParamRow = -1;
@@ -1602,9 +1595,9 @@ namespace StudioCore.ParamEditor
             {
                 var primary = ParamBank.PrimaryBank.VanillaDiffCache.GetValueOrDefault(paramKey, null);
                 if (primary != null ? primary.Any() : false)
-                    ImGui.PushStyleColor(ImGuiCol.Text, PRIMARYCHANGEDCOLOUR);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PARAM_PRIMARY_MODIFIED_COLOUR);
                 else
-                    ImGui.PushStyleColor(ImGuiCol.Text, ALLVANILLACOLOUR);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PARAM_PRIMARY_UNMODIFIED_COLOUR);
                 if (ImGui.Selectable(paramKey, paramKey == _selection.getActiveParam()))
                 {
                     //_selection.setActiveParam(param.Key);
@@ -1799,16 +1792,16 @@ namespace StudioCore.ParamEditor
                 // If the auxes are changed bu
                 bool auxDiffPrimaryAndVanilla = auxDiffCaches.Where((cache) => cache.Item1.Contains(r.ID) && cache.Item2.Contains(r.ID)).Count() > 0;
                 if (auxDiffVanilla && auxDiffPrimaryAndVanilla)
-                    ImGui.PushStyleColor(ImGuiCol.Text, AUXCONFLICTCOLOUR);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PARAM_AUX_CONFLICT_COLOUR);
                 else
-                    ImGui.PushStyleColor(ImGuiCol.Text, PRIMARYCHANGEDCOLOUR);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PARAM_PRIMARY_MODIFIED_COLOUR);
             }
             else
             {
                 if (auxDiffVanilla)
-                    ImGui.PushStyleColor(ImGuiCol.Text, AUXADDEDCOLOUR);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PARAM_AUX_ADDED_COLOUR);
                 else
-                    ImGui.PushStyleColor(ImGuiCol.Text, ALLVANILLACOLOUR);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PARAM_PRIMARY_UNMODIFIED_COLOUR);
             }
 
             var selected = _selection.getSelectedRows().Contains(r);

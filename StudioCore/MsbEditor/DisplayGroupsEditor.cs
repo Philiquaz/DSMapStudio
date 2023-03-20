@@ -189,22 +189,22 @@ namespace StudioCore.MsbEditor
                         {
                             //selection dispgroup and drawgroup is ticked
                             //yellow
-                            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.4f, 0.4f, 0.06f, 1.0f));
-                            ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(1f, 1f, 0.02f, 1.0f));
+                            ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.DRAW_DISP_BG_COLOUR);
+                            ImGui.PushStyleColor(ImGuiCol.CheckMark, Style.Current.DRAW_DISP_CHECK_COLOUR);
                         }
                         else if (drawActive)
                         {
                             //selection drawgroup is ticked
                             //green
-                            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.02f, 0.3f, 0.02f, 1.0f));
-                            ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(0.2f, 1.0f, 0.2f, 1.0f));
+                            ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.DRAW_BG_COLOUR);
+                            ImGui.PushStyleColor(ImGuiCol.CheckMark, Style.Current.DRAW_CHECK_COLOUR);
                         }
                         else if (dispActive)
                         {
                             //selection dispGroup is ticked
                             //red
-                            ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.4f, 0.06f, 0.06f, 1.0f));
-                            ImGui.PushStyleColor(ImGuiCol.CheckMark, new Vector4(1.0f, 0.2f, 0.2f, 1.0f));
+                            ImGui.PushStyleColor(ImGuiCol.FrameBg, Style.Current.DISP_BG_COLOUR);
+                            ImGui.PushStyleColor(ImGuiCol.CheckMark, Style.Current.DISP_CHECK_COLOUR);
                         }
 
 
