@@ -870,18 +870,21 @@ namespace StudioCore.ParamEditor
                 var vrows = otherBank._params[param].Rows.OrderBy(r => r.ID).ToArray();
                 
                 var vanillaIndex = 0;
-                int lastID = -1;
+                int lastID = int.MinValue;
+                // Use this in the case int.MinValue is used as an ID. The initial lastID otherwise skips searching for vanilla equivilents
+                bool processedFirstID = false;
                 ReadOnlySpan<Param.Row> lastVanillaRows = default;
                 for (int i = 0; i < rows.Length; i++)
                 {
                     int ID = rows[i].ID;
-                    if (ID == lastID)
+                    if (ID == lastID && processedFirstID)
                     {
                         RefreshParamRowDiffCache(rows[i], lastVanillaRows, cache);
                     }
                     else
                     {
                         lastID = ID;
+                        processedFirstID = true;
                         while (vanillaIndex < vrows.Length && vrows[vanillaIndex].ID < ID)
                             vanillaIndex++;
                         if (vanillaIndex >= vrows.Length)
