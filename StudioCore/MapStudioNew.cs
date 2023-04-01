@@ -468,6 +468,7 @@ namespace StudioCore
             ImGui.PushStyleColor(ImGuiCol.TabActive, Style.Current.ELEMENT_ACTIVE_COLOUR);
             ImGui.PushStyleColor(ImGuiCol.TabUnfocused, Style.Current.TAB_COLOUR);
             ImGui.PushStyleColor(ImGuiCol.TabUnfocusedActive, Style.Current.ELEMENT_HOVERED_COLOUR);
+            ImGui.PushStyleColor(ImGuiCol.Text, Style.Current.PRIMARY_TEXT_COLOUR);
 
             // Sizes
             ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 1.0f);
@@ -484,7 +485,7 @@ namespace StudioCore
 
         public void UnapplyStyle()
         {
-            ImGui.PopStyleColor(27);
+            ImGui.PopStyleColor(28);
             ImGui.PopStyleVar(10);
         }
 
