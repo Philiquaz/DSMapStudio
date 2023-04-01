@@ -1758,6 +1758,14 @@ namespace StudioCore
                         }
 
                         ImGui.Unindent();
+                        if (ImGui.Button("Go dark (d20)") && Random.Shared.Next(20) == 0)
+                        {
+                            Style.Current = Style.Dark;
+                        }
+                        if (ImGui.Button("Light it up (d420)") && Random.Shared.Next(20) == 0)
+                        {
+                            Style.Current = Style.Light;
+                        }
                     }
 
                     ImGui.Separator();
