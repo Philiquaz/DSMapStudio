@@ -85,7 +85,7 @@ namespace StudioCore
             PARAM_AUX_ADDED_COLOUR = new Vector4(0.3f, 0.3f, 0.5f, 1.0f),
             PARAM_AUX_CONFLICT_COLOUR = new Vector4(0.5f, 0.3f, 0.3f, 1.0f)
         };
-        public static Style Current { get; private set; } = Light;
+        public static Style Current { get; set; } = Light;
 
         // General settings
 

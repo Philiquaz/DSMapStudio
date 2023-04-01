@@ -26,7 +26,7 @@ namespace StudioCore
 {
     public class MapStudioNew
     {
-        private static string _version = System.Windows.Forms.Application.ProductVersion;
+        private static string _version = "1/4/2023";//System.Windows.Forms.Application.ProductVersion;
         private static string _programTitle = $"Dark Souls Map Studio version {_version}";
 
         private Sdl2Window _window;
