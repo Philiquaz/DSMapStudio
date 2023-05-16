@@ -37,8 +37,6 @@ namespace StudioCore.ParamEditor
         internal AssetLocator AssetLocator = null;
 
         private Dictionary<string, Param> _params = null;
-        private Dictionary<string, HashSet<int>> _vanillaDiffCache = null; //If param != vanillaparam
-        private Dictionary<string, HashSet<int>> _primaryDiffCache = null; //If param != primaryparam
 
         private bool _pendingUpgrade = false;
 
@@ -62,37 +60,6 @@ namespace StudioCore.ParamEditor
         public ulong ParamVersion
         {
             get => _paramVersion;
-        }
-
-        public IReadOnlyDictionary<string, HashSet<int>> VanillaDiffCache
-        {
-            get
-            {
-                if (IsLoadingParams)
-                {
-                    return null;
-                }
-                {
-                if (VanillaBank == this)
-                    return null;
-                }
-                return _vanillaDiffCache;
-            }
-        }
-        public IReadOnlyDictionary<string, HashSet<int>> PrimaryDiffCache
-        {
-            get
-            {
-                if (IsLoadingParams)
-                {
-                    return null;
-                }
-                {
-                if (PrimaryBank == this)
-                    return null;
-                }
-                return _primaryDiffCache;
-            }
         }
 
         private static List<(string, PARAMDEF)> LoadParamdefs(AssetLocator assetLocator)
@@ -766,7 +733,6 @@ namespace StudioCore.ParamEditor
                     PrimaryBank.LoadParamsER(settings.PartialParams);
                 }
 
-                PrimaryBank.ClearParamDiffCaches();
                 PrimaryBank.IsLoadingParams = false;
 
                 VanillaBank.IsLoadingParams = true;
@@ -863,39 +829,30 @@ namespace StudioCore.ParamEditor
             {
                 newBank.LoadParamsDESFromFile(path);
             }
-            newBank.ClearParamDiffCaches();
             newBank.IsLoadingParams = false;
             newBank.RefreshParamDiffCaches();
             AuxBanks[Path.GetFileName(Path.GetDirectoryName(path))] = newBank;
         }
 
-
-        public void ClearParamDiffCaches()
-        {
-            _vanillaDiffCache = new Dictionary<string, HashSet<int>>();
-            _primaryDiffCache = new Dictionary<string, HashSet<int>>();
-            foreach (string param in _params.Keys)
-            {
-                _vanillaDiffCache.Add(param, new HashSet<int>());
-                _primaryDiffCache.Add(param, new HashSet<int>());
-            }
-        }
         public void RefreshParamDiffCaches()
         {
-            if (this != VanillaBank)
-                _vanillaDiffCache = GetParamDiff(VanillaBank);
-            if (this != PrimaryBank)
-                _primaryDiffCache = GetParamDiff(PrimaryBank);
+            SetParamDiff(VanillaBank);
+            SetParamDiff(PrimaryBank);
         }
-        private Dictionary<string, HashSet<int>> GetParamDiff(ParamBank otherBank)
+        private void SetParamDiff(ParamBank otherBank)
         {
             if (IsLoadingParams || otherBank == null || otherBank.IsLoadingParams)
-                return null;
-            Dictionary<string, HashSet<int>> newCache = new Dictionary<string, HashSet<int>>();
+                return;
+            bool primaryTOrVanillaF;
+            if (otherBank == PrimaryBank)
+                primaryTOrVanillaF = true;
+            else if (otherBank == VanillaBank)
+                primaryTOrVanillaF = false;
+            else
+                throw new Exception("Unsupported diff attempted");
+
             foreach (string param in _params.Keys)
             {
-                HashSet<int> cache = new HashSet<int>();
-                newCache.Add(param, cache);
                 Param p = _params[param];
                 if (!otherBank._params.ContainsKey(param))
                 {
@@ -914,7 +871,7 @@ namespace StudioCore.ParamEditor
                     int ID = rows[i].ID;
                     if (ID == lastID)
                     {
-                        RefreshParamRowDiffCache(rows[i], lastVanillaRows, cache);
+                        RefreshParamRowDiffCache(rows[i], lastVanillaRows, primaryTOrVanillaF);
                     }
                     else
                     {
@@ -923,7 +880,7 @@ namespace StudioCore.ParamEditor
                             vanillaIndex++;
                         if (vanillaIndex >= vrows.Length)
                         {
-                            RefreshParamRowDiffCache(rows[i], Span<Param.Row>.Empty, cache);
+                            RefreshParamRowDiffCache(rows[i], Span<Param.Row>.Empty, primaryTOrVanillaF);
                         }
                         else
                         {
@@ -931,33 +888,29 @@ namespace StudioCore.ParamEditor
                             while (vanillaIndex + count < vrows.Length && vrows[vanillaIndex + count].ID == ID)
                                 count++;
                             lastVanillaRows = new ReadOnlySpan<Param.Row>(vrows, vanillaIndex, count);
-                            RefreshParamRowDiffCache(rows[i], lastVanillaRows, cache);
+                            RefreshParamRowDiffCache(rows[i], lastVanillaRows, primaryTOrVanillaF);
                             vanillaIndex += count;
                         }
                     }
                 }
             }
-            return newCache;
         }
-        private static void RefreshParamRowDiffCache(Param.Row row, ReadOnlySpan<Param.Row> otherBankRows, HashSet<int> cache)
+        private static void RefreshParamRowDiffCache(Param.Row row, ReadOnlySpan<Param.Row> otherBankRows, bool primaryTOrVanillaF)
         {
-            if (IsChanged(row, otherBankRows))
-                cache.Add(row.ID);
+            if (primaryTOrVanillaF)
+                row.contextObject.modifiedVsPrimary = IsChanged(row, otherBankRows);
             else
-                cache.Remove(row.ID);
+                row.contextObject.modifiedVsVanilla = IsChanged(row, otherBankRows);
         }
 
         public void RefreshParamRowVanillaDiff(Param.Row row, string param)
         {
             if (param == null)
                 return;
-            if (!VanillaBank.Params.ContainsKey(param) || VanillaDiffCache == null || !VanillaDiffCache.ContainsKey(param))
+            if (!VanillaBank.Params.ContainsKey(param))
                 return; // Don't try for now
             var otherBankRows = VanillaBank.Params[param].Rows.Where(cell => cell.ID == row.ID).ToArray();
-            if (IsChanged(row, otherBankRows))
-                VanillaDiffCache[param].Add(row.ID);
-            else
-                VanillaDiffCache[param].Remove(row.ID);
+            row.contextObject.modifiedVsVanilla = IsChanged(row, otherBankRows);
         }
 
         private static bool IsChanged(Param.Row row, ReadOnlySpan<Param.Row> vanillaRows)
@@ -1380,10 +1333,9 @@ namespace StudioCore.ParamEditor
                     if (partial)
                     {
                         TaskManager.WaitAll();//wait on dirtycache update
-                        HashSet<int> dirtyCache = _vanillaDiffCache[Path.GetFileNameWithoutExtension(p.Name)];
                         foreach (Param.Row row in paramFile.Rows)
                         {
-                            if (dirtyCache.Contains(row.ID))
+                            if (row.contextObject.modifiedVsVanilla)
                                 changed.Add(row);
                         }
                         paramFile.Rows = changed;
@@ -1787,20 +1739,13 @@ namespace StudioCore.ParamEditor
             return null;
         }
 
-        private static HashSet<int> EMPTYSET = new HashSet<int>();
-        public HashSet<int> GetVanillaDiffRows(string param)
+        public bool GetVanillaAnyDiff(string param)
         {
-            var allDiffs = VanillaDiffCache;
-            if (allDiffs == null || !allDiffs.ContainsKey(param))
-                return EMPTYSET;
-            return allDiffs[param];
+            return Params[param].Rows.Where((r) => r.contextObject.modifiedVsVanilla).Any();
         }
-        public HashSet<int> GetPrimaryDiffRows(string param)
+        public bool GetPrimaryAnyDiff(string param)
         {
-            var allDiffs = PrimaryDiffCache;
-            if (allDiffs == null || !allDiffs.ContainsKey(param))
-                return EMPTYSET;
-            return allDiffs[param];
+            return Params[param].Rows.Where((r) => r.contextObject.modifiedVsPrimary).Any();
         }
     }
 }

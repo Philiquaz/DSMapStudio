@@ -1706,7 +1706,7 @@ namespace StudioCore.ParamEditor
 
             foreach (var paramKey in paramKeyList)
             {
-                var primary = ParamBank.PrimaryBank.VanillaDiffCache.GetValueOrDefault(paramKey, null);
+                var primary = ParamBank.PrimaryBank.GetVanillaAnyDiff(paramKey);
                 Param p = ParamBank.PrimaryBank.Params[paramKey];
                 if (p != null)
                 {
@@ -1720,7 +1720,7 @@ namespace StudioCore.ParamEditor
                 }
 
                 ImGui.Indent(15.0f * CFG.Current.UIScale);
-                if (primary != null ? primary.Any() : false)
+                if (primary)
                     ImGui.PushStyleColor(ImGuiCol.Text, PRIMARYCHANGEDCOLOUR);
                 else
                     ImGui.PushStyleColor(ImGuiCol.Text, ALLVANILLACOLOUR);
@@ -1764,8 +1764,6 @@ namespace StudioCore.ParamEditor
             else
             {
                 Param para = ParamBank.PrimaryBank.Params[activeParam];
-                HashSet<int> vanillaDiffCache = ParamBank.PrimaryBank.GetVanillaDiffRows(activeParam);
-                List<(HashSet<int>, HashSet<int>)> auxDiffCaches = ParamBank.AuxBanks.Select((bank, i) => (bank.Value.GetVanillaDiffRows(activeParam), bank.Value.GetPrimaryDiffRows(activeParam))).ToList();
                 IParamDecorator decorator = null;
                 if (_paramEditor._decorators.ContainsKey(activeParam))
                 {
@@ -1826,7 +1824,7 @@ namespace StudioCore.ParamEditor
                             _paramEditor._projectSettings.PinnedRows.GetValueOrDefault(activeParam, new List<int>()).Remove(rowID);
                             continue;
                         }
-                        RowColumnEntry(activeParam, null, para[rowID], vanillaDiffCache, auxDiffCaches, decorator, ref scrollTo, false, true);
+                        RowColumnEntry(activeParam, null, para[rowID], decorator, ref scrollTo, false, true);
                     }
 
                     ImGui.Spacing();
@@ -1862,13 +1860,13 @@ namespace StudioCore.ParamEditor
                         Param.Row next = i + 1 < rows.Count ? rows[i + 1] : null;
                         if (prev != null && next != null && prev.ID + 1 != currentRow.ID && currentRow.ID + 1 == next.ID)
                             ImGui.Separator();
-                        RowColumnEntry(activeParam, rows, currentRow, vanillaDiffCache, auxDiffCaches, decorator, ref scrollTo, doFocus, false);
+                        RowColumnEntry(activeParam, rows, currentRow, decorator, ref scrollTo, doFocus, false);
                         if (prev != null && next != null && prev.ID + 1 == currentRow.ID && currentRow.ID + 1 != next.ID)
                             ImGui.Separator();
                     }
                     else
                     {
-                        RowColumnEntry(activeParam, rows, currentRow, vanillaDiffCache, auxDiffCaches, decorator, ref scrollTo, doFocus, false);
+                        RowColumnEntry(activeParam, rows, currentRow, decorator, ref scrollTo, doFocus, false);
                     }
                 }
                 if (doFocus)
@@ -1900,14 +1898,15 @@ namespace StudioCore.ParamEditor
             ImGui.EndChild();
         }
 
-        private void RowColumnEntry(string activeParam, List<Param.Row> p, Param.Row r, HashSet<int> vanillaDiffCache, List<(HashSet<int>, HashSet<int>)> auxDiffCaches, IParamDecorator decorator, ref float scrollTo, bool doFocus, bool isPinned)
+        private void RowColumnEntry(string activeParam, List<Param.Row> p, Param.Row r, IParamDecorator decorator, ref float scrollTo, bool doFocus, bool isPinned)
         {
-            bool diffVanilla = vanillaDiffCache.Contains(r.ID);
-            bool auxDiffVanilla = auxDiffCaches.Where((cache) => cache.Item1.Contains(r.ID)).Count() > 0;
+            bool diffVanilla = r.contextObject.modifiedVsVanilla;
+            var ars = ParamBank.AuxBanks.SelectMany((x) => x.Value.Params[activeParam].Rows.Where((ar) => ar.ID == r.ID));
+            bool auxDiffVanilla = ars.Where((r) => r.contextObject.modifiedVsVanilla).Any();
             if (diffVanilla)
             {
                 // If the auxes are changed bu
-                bool auxDiffPrimaryAndVanilla = auxDiffCaches.Where((cache) => cache.Item1.Contains(r.ID) && cache.Item2.Contains(r.ID)).Count() > 0;
+                bool auxDiffPrimaryAndVanilla = ars.Where((r) => r.contextObject.modifiedVsVanilla && r.contextObject.modifiedVsPrimary).Any();
                 if (auxDiffVanilla && auxDiffPrimaryAndVanilla)
                     ImGui.PushStyleColor(ImGuiCol.Text, AUXCONFLICTCOLOUR);
                 else

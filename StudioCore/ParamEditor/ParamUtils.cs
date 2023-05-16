@@ -161,11 +161,11 @@ namespace StudioCore.ParamEditor
             return (values, values[values.Length-1]);
         }
     }
-    public class MSRowCtx
+    public struct MSRowCtx
     {
-        string nameToPrint;
-        bool vanillaModified;
-        bool primaryModified;
+        public string nameToPrint;
+        public bool modifiedVsVanilla;
+        public bool modifiedVsPrimary;
     }
 
     public enum PseudoColumn

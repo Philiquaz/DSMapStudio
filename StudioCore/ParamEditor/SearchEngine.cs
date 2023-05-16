@@ -200,8 +200,7 @@ namespace StudioCore.Editor
             filterList.Add("modified", newCmd(new string[0], noArgs(noContext((param)=>{
                 if (param.Item1 != bank)
                     return false;
-                HashSet<int> cache = bank.GetVanillaDiffRows(bank.GetKeyForParam(param.Item2));
-                return cache.Count > 0;
+                return bank.GetVanillaAnyDiff(bank.GetKeyForParam(param.Item2));
             }))));
             filterList.Add("param", newCmd(new string[]{"param name (regex)"}, (args, lenient)=>{
                 Regex rx = lenient ? new Regex(args[0], RegexOptions.IgnoreCase) : new Regex($@"^{args[0]}$");
@@ -231,8 +230,7 @@ namespace StudioCore.Editor
             unpacker = (param) => new List<Param.Row>(param.Item2.Rows);
             filterList.Add("modified", newCmd(new string[0], noArgs((context)=>{
                     string paramName = context.Item1.GetKeyForParam(context.Item2);
-                    HashSet<int> cache = context.Item1.GetVanillaDiffRows(paramName);
-                    return (row) => cache.Contains(row.ID);
+                    return (row) => row.contextObject.modifiedVsVanilla;
                 }
             )));
             filterList.Add("added", newCmd(new string[0], noArgs((context)=>{
@@ -247,18 +245,12 @@ namespace StudioCore.Editor
                 string paramName = context.Item1.GetKeyForParam(context.Item2);
                 if (paramName == null)
                     return (row) => true;
-                HashSet<int> pCache = ParamBank.PrimaryBank.GetVanillaDiffRows(paramName);
-                var auxCaches = ParamBank.AuxBanks.Select(x=>(x.Value.GetPrimaryDiffRows(paramName), x.Value.GetVanillaDiffRows(paramName))).ToList();
-                return (row) => !pCache.Contains(row.ID) && auxCaches.Where((x) => x.Item2.Contains(row.ID) && x.Item1.Contains(row.ID)).Count() == 1;
-                }
-            ), ()=>ParamBank.AuxBanks.Count > 0));
+                return (row) => ParamBank.AuxBanks.SelectMany((x) => x.Value.Params[paramName].Rows.Where((ar) => ar.ID == row.ID)).Where((r) => r.contextObject.modifiedVsVanilla).Count() == (row.contextObject.modifiedVsVanilla ? 0 : 1);
+            }), ()=>ParamBank.AuxBanks.Count > 0));
             filterList.Add("conflicts", newCmd(new string[0], noArgs((context)=>{
                 string paramName = context.Item1.GetKeyForParam(context.Item2);
-                HashSet<int> pCache = ParamBank.PrimaryBank.GetVanillaDiffRows(paramName);
-                var auxCaches = ParamBank.AuxBanks.Select(x=>(x.Value.GetPrimaryDiffRows(paramName), x.Value.GetVanillaDiffRows(paramName))).ToList();
-                return (row) => (pCache.Contains(row.ID)?1:0) + auxCaches.Where((x) => x.Item2.Contains(row.ID) && x.Item1.Contains(row.ID)).Count() > 1;
-                }
-            ), ()=>ParamBank.AuxBanks.Count > 0));
+                return (row) => ParamBank.AuxBanks.SelectMany((x) => x.Value.Params[paramName].Rows.Where((ar) => ar.ID == row.ID)).Where((r) => r.contextObject.modifiedVsVanilla).Count() > 0 && row.contextObject.modifiedVsVanilla;
+            }), ()=>ParamBank.AuxBanks.Count > 0));
             filterList.Add("id", newCmd(new string[]{"row id (regex)"}, (args, lenient)=>{
                 Regex rx = lenient ? new Regex(args[0].ToLower()) : new Regex($@"^{args[0]}$");
                 return noContext((row)=>rx.Match(row.ID.ToString()).Success);
