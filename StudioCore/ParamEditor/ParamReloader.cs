@@ -13,6 +13,7 @@ using System.Text;
 using FSParam;
 using StudioCore.Editor;
 using System.Threading.Tasks;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.ParamEditor
 {

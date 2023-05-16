@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using FSParam;
 using StudioCore.TextEditor;
 using StudioCore.ParamEditor;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.Editor
 {

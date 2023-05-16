@@ -11,6 +11,7 @@ using StudioCore.Scene;
 using System.Diagnostics;
 using FSParam;
 using StudioCore.Editor;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.MsbEditor
 {

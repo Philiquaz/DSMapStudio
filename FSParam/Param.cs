@@ -6,6 +6,7 @@ using StudioUtils;
 
 namespace FSParam
 {
+
     /// <summary>
     /// An alternative to the SoulsFormats param class that's designed to be faster to read/write and be
     /// much more memory efficient. This tries to match the SoulsFormats PARAM API as much as possible but
@@ -15,7 +16,7 @@ namespace FSParam
     ///
     /// A lot of this code is based off the SoulsFormats PARAM class (especially the read/write), so thanks TKGP.
     /// </summary>
-    public class Param : SoulsFile<Param>
+    public class Param<R> : SoulsFile<Param<R>>
     {
         /// <summary>
         /// First set of flags indicating file format; highly speculative.
@@ -120,10 +121,10 @@ namespace FSParam
             /// </summary>
             Flag80 = 0b1000_0000,
         }
-
         public class Row
         {
-            internal Param Parent;
+            public R contextObject;
+            internal Param<R> Parent;
             public int ID { get; set; }
             public string? Name { get; set; }
             internal uint DataIndex;
@@ -146,7 +147,7 @@ namespace FSParam
 
             public PARAMDEF Def => Parent.AppliedParamdef;
 
-            internal Row(int id, string? name, Param parent, uint dataIndex)
+            internal Row(int id, string? name, Param<R> parent, uint dataIndex)
             {
                 ID = id;
                 Name = name;
@@ -154,7 +155,7 @@ namespace FSParam
                 DataIndex = dataIndex;
             }
             
-            public Row(int id, string name, Param parent)
+            public Row(int id, string name, Param<R> parent)
             {
                 ID = id;
                 Name = name;
@@ -171,7 +172,7 @@ namespace FSParam
                 Parent._paramData.CopyData(DataIndex, clone.DataIndex);
             }
             
-            public Row(Row clone, Param newParent)
+            public Row(Row clone, Param<R> newParent)
             {
                 Parent = newParent;
                 ID = clone.ID;
@@ -514,7 +515,7 @@ namespace FSParam
         /// Creates a new empty param inheriting config/paramdef from a source
         /// </summary>
         /// <param name="source"></param>
-        public Param(Param source)
+        public Param(Param<R> source)
         {
             BigEndian = source.BigEndian;
             Format2D = source.Format2D;

@@ -4,6 +4,7 @@ using FSParam;
 using ImGuiNET;
 using StudioCore.Editor;
 using System.Numerics;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.ParamEditor
 {

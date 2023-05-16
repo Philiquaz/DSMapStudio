@@ -15,6 +15,7 @@ using StudioCore;
 using StudioCore.Editor;
 using StudioCore.ParamEditor;
 using StudioCore.TextEditor;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.Editor
 {

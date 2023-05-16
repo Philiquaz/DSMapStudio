@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using FSParam;
 using SoulsFormats;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.MsbEditor
 {

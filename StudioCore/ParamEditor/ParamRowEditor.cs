@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using FSParam;
 using StudioCore;
 using StudioCore.Editor;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.ParamEditor
 {

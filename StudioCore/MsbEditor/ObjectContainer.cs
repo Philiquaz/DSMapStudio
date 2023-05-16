@@ -18,6 +18,7 @@ using SoulsFormats.KF4;
 using System.Windows.Forms.Design;
 using static SoulsFormats.MCP;
 using System.ComponentModel;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.MsbEditor
 {

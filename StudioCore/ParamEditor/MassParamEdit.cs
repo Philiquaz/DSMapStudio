@@ -9,6 +9,7 @@ using ImGuiNET;
 using SoulsFormats;
 using StudioCore.Editor;
 using StudioCore.ParamEditor;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.ParamEditor
 {

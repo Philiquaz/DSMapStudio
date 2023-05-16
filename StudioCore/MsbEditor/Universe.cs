@@ -13,6 +13,7 @@ using SoulsFormats;
 using Newtonsoft.Json;
 using StudioCore.Scene;
 using StudioCore.Editor;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.MsbEditor
 {

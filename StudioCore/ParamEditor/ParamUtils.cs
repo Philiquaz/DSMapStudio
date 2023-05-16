@@ -44,7 +44,7 @@ namespace StudioCore.ParamEditor
             }
             return nval;
         }
-        public static bool RowMatches(this Param.Row row, Param.Row vrow)
+        public static bool RowMatches<T>(this Param<T>.Row row, Param<T>.Row vrow)
         {
             if (row.Def.ParamType != vrow.Def.ParamType || row.Def.DataVersion != vrow.Def.DataVersion)
                 return false;
@@ -71,27 +71,27 @@ namespace StudioCore.ParamEditor
             return val.GetType() == typeof(byte[]) ? ParamUtils.Dummy8Write((byte[])val) : val.ToString();
         }
 
-        public static object Get(this Param.Row row, (PseudoColumn, Param.Column) col)
+        public static object Get<T>(this Param<T>.Row row, (PseudoColumn, Param<T>.Column) col)
         {
             return col.Item1 == PseudoColumn.ID ? row.ID : col.Item1 == PseudoColumn.Name ? row.Name : row[col.Item2].Value;
         }
 
-        public static (PseudoColumn, Param.Column) GetCol(this Param param, string field)
+        public static (PseudoColumn, Param<T>.Column) GetCol<T>(this Param<T> param, string field)
         {
             PseudoColumn pc = field.Equals("ID") ? PseudoColumn.ID : field.Equals("Name") ? PseudoColumn.Name : PseudoColumn.None;
-            Param.Column col = param?[field];
+            Param<T>.Column col = param?[field];
             return (pc, col);
         }
 
-        public static (PseudoColumn, Param.Column) GetAs(this (PseudoColumn, Param.Column) col, Param newParam)
+        public static (PseudoColumn, Param<T>.Column) GetAs<T>(this (PseudoColumn, Param<T>.Column) col, Param<T> newParam)
         {
             return (col.Item1, col.Item2 == null || newParam == null ? null : newParam.Cells.FirstOrDefault((x) => x.Def.InternalName == col.Item2.Def.InternalName && x.GetByteOffset() == col.Item2.GetByteOffset()));
         }
-        public static bool IsColumnValid(this (PseudoColumn, Param.Column) col)
+        public static bool IsColumnValid<T>(this (PseudoColumn, Param<T>.Column) col)
         {
             return col.Item1 != PseudoColumn.None || col.Item2 != null;
         }
-        public static Type GetColumnType(this (PseudoColumn, Param.Column) col)
+        public static Type GetColumnType<T>(this (PseudoColumn, Param<T>.Column) col)
         {
             if (col.Item1 == PseudoColumn.ID)
                 return typeof(int);
@@ -100,7 +100,7 @@ namespace StudioCore.ParamEditor
             else
                 return col.Item2.ValueType;
         }
-        public static string GetColumnSfType(this (PseudoColumn, Param.Column) col)
+        public static string GetColumnSfType<T>(this (PseudoColumn, Param<T>.Column) col)
         {
             if (col.Item1 == PseudoColumn.ID)
                 return "_int";
@@ -109,12 +109,12 @@ namespace StudioCore.ParamEditor
             else
                 return col.Item2.Def.InternalType;
         }
-        public static IEnumerable<(object, int)> GetParamValueDistribution(IEnumerable<Param.Row> rows, (PseudoColumn, Param.Column) col)
+        public static IEnumerable<(object, int)> GetParamValueDistribution<T>(IEnumerable<Param<T>.Row> rows, (PseudoColumn, Param<T>.Column) col)
         {
             var vals = rows.Select((row, i) => row.Get(col));
             return vals.GroupBy((val) => val).Select((g) => (g.Key, g.Count()));
         }
-        public static (float[], int, float, float) getCalcCorrectedData(CalcCorrectDefinition ccd, Param.Row row)
+        public static (float[], int, float, float) getCalcCorrectedData<T>(CalcCorrectDefinition ccd, Param<T>.Row row)
         {
             float[] stageMaxVal = ccd.stageMaxVal.Select((x, i) => (float)row[x].Value.Value).ToArray();
             float[] stageMaxGrowVal = ccd.stageMaxGrowVal.Select((x, i) => (float)row[x].Value.Value).ToArray();
@@ -141,7 +141,7 @@ namespace StudioCore.ParamEditor
             }
             return (values, (int)stageMaxVal[0], stageMaxGrowVal[0], stageMaxGrowVal[stageMaxGrowVal.Length-1]);
         }
-        public static (float[], float) getSoulCostData(SoulCostDefinition scd, Param.Row row)
+        public static (float[], float) getSoulCostData<T>(SoulCostDefinition scd, Param<T>.Row row)
         {
             float init_inclination_soul = (float)row[scd.init_inclination_soul].Value.Value;
             float adjustment_value = (float)row[scd.adjustment_value].Value.Value;
@@ -160,6 +160,12 @@ namespace StudioCore.ParamEditor
             }
             return (values, values[values.Length-1]);
         }
+    }
+    public class MSRowCtx
+    {
+        string nameToPrint;
+        bool vanillaModified;
+        bool primaryModified;
     }
 
     public enum PseudoColumn

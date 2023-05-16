@@ -12,6 +12,7 @@ using System.Net.Http.Headers;
 using System.Security;
 using StudioCore.Editor;
 using FSParam;
+using Param = FSParam.Param<StudioCore.ParamEditor.MSRowCtx>;
 
 namespace StudioCore.MsbEditor
 {
