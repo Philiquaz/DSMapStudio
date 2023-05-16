@@ -1901,7 +1901,7 @@ namespace StudioCore.ParamEditor
         private void RowColumnEntry(string activeParam, List<Param.Row> p, Param.Row r, IParamDecorator decorator, ref float scrollTo, bool doFocus, bool isPinned)
         {
             bool diffVanilla = r.contextObject.modifiedVsVanilla;
-            var ars = ParamBank.AuxBanks.SelectMany((x) => x.Value.Params[activeParam].Rows.Where((ar) => ar.ID == r.ID)).Where((r) => r.contextObject.modifiedVsVanilla);
+            var ars = CacheBank.GetCached(_paramEditor, r, "auxRowModifiedList", () => ParamBank.AuxBanks.SelectMany((x) => x.Value.Params[activeParam].Rows.Where((ar) => ar.ID == r.ID)).Where((r) => r.contextObject.modifiedVsVanilla));
             bool auxDiffVanilla = ars.Any();
             if (diffVanilla)
             {
