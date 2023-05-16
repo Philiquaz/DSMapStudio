@@ -1901,12 +1901,12 @@ namespace StudioCore.ParamEditor
         private void RowColumnEntry(string activeParam, List<Param.Row> p, Param.Row r, IParamDecorator decorator, ref float scrollTo, bool doFocus, bool isPinned)
         {
             bool diffVanilla = r.contextObject.modifiedVsVanilla;
-            var ars = ParamBank.AuxBanks.SelectMany((x) => x.Value.Params[activeParam].Rows.Where((ar) => ar.ID == r.ID));
-            bool auxDiffVanilla = ars.Where((r) => r.contextObject.modifiedVsVanilla).Any();
+            var ars = ParamBank.AuxBanks.SelectMany((x) => x.Value.Params[activeParam].Rows.Where((ar) => ar.ID == r.ID)).Where((r) => r.contextObject.modifiedVsVanilla);
+            bool auxDiffVanilla = ars.Any();
             if (diffVanilla)
             {
                 // If the auxes are changed bu
-                bool auxDiffPrimaryAndVanilla = ars.Where((r) => r.contextObject.modifiedVsVanilla && r.contextObject.modifiedVsPrimary).Any();
+                bool auxDiffPrimaryAndVanilla = ars.Where((r) => r.contextObject.modifiedVsPrimary).Any();
                 if (auxDiffVanilla && auxDiffPrimaryAndVanilla)
                     ImGui.PushStyleColor(ImGuiCol.Text, AUXCONFLICTCOLOUR);
                 else
