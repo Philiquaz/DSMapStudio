@@ -135,6 +135,7 @@ namespace StudioCore.ParamEditor
 
         public static bool EditorMode = false;
 
+        public bool GotoSelectedRow = false;
         internal bool _isSearchBarActive = false;
         private bool _isShortcutPopupOpen = false;
         private bool _isMEditPopupOpen = false;
@@ -311,6 +312,10 @@ namespace StudioCore.ParamEditor
                 if (ImGui.MenuItem("Duplicate", KeyBindings.Current.Core_Duplicate.HintText, false, _activeView._selection.rowSelectionExists()))
                 {
                     DuplicateSelection();
+                }
+                if (ImGui.MenuItem("Goto selected row", KeyBindings.Current.Param_GotoSelectedRow.HintText, false, _activeView._selection.rowSelectionExists()))
+                {
+                    GotoSelectedRow = true;
                 }
                 ImGui.Separator();
                 if (ImGui.MenuItem($"Mass Edit", KeyBindings.Current.Param_MassEdit.HintText))
@@ -1005,14 +1010,25 @@ namespace StudioCore.ParamEditor
                         });
                     }
                 }
+                if (!ImGui.IsAnyItemActive() && _activeView._selection.rowSelectionExists() && InputTracker.GetKeyDown(KeyBindings.Current.Param_GotoSelectedRow))
+                {
+                    GotoSelectedRow = true;
+                }
             }
 
+            if (ParamBank.PrimaryBank.IsLoadingParams)
+            {
+                ImGui.Text("Loading Params...");
+                return;
+            }
+            if (!ParamBank.IsMetaLoaded)
+            {
+                ImGui.Text("Loading Meta...");
+                return;
+            }
             if (ParamBank.PrimaryBank.Params == null)
             {
-                if (ParamBank.PrimaryBank.IsLoadingParams)
-                {
-                    ImGui.Text("Loading...");
-                }
+                ImGui.Text("No params loaded");
                 return;
             }
 
@@ -1806,7 +1822,7 @@ namespace StudioCore.ParamEditor
                 scrollTo = 0;
 
                 //Goto ID
-                if (ImGui.Button($"Goto ID <{KeyBindings.Current.Param_GotoRow.HintText}>") || (isActiveView && InputTracker.GetKeyDown(KeyBindings.Current.Param_GotoRow)))
+                if (ImGui.Button($"Goto ID <{KeyBindings.Current.Param_GotoRowID.HintText}>") || (isActiveView && InputTracker.GetKeyDown(KeyBindings.Current.Param_GotoRowID)))
                 {
                     ImGui.OpenPopup("gotoParamRow");
                 }
@@ -1965,6 +1981,14 @@ namespace StudioCore.ParamEditor
                     ImGui.SetScrollHereY();
                 }
             }
+            if (_paramEditor.GotoSelectedRow && !isPinned)
+            {
+                if (_selection.getActiveRow().ID == r.ID)
+                {
+                    ImGui.SetScrollHereY();
+                    _paramEditor.GotoSelectedRow = false;
+                }
+            }
 
             if (ImGui.Selectable($@"{r.ID} {Utils.ImGuiEscape(r.Name, "")}", selected))
             {
@@ -2024,6 +2048,10 @@ namespace StudioCore.ParamEditor
                 if (ImGui.Selectable("Compare..."))
                 {
                     _selection.SetCompareRow(r);
+                }
+                if (ImGui.Selectable("Copy ID to clipboard"))
+                {
+                    Clipboard.SetText($"{r.ID}");
                 }
                 ImGui.EndPopup();
             }

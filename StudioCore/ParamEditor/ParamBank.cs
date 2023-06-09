@@ -831,7 +831,7 @@ namespace StudioCore.ParamEditor
             }
             newBank.IsLoadingParams = false;
             newBank.RefreshParamDiffCaches();
-            AuxBanks[Path.GetFileName(Path.GetDirectoryName(path))] = newBank;
+            AuxBanks[Path.GetFileName(Path.GetDirectoryName(path)).Replace(' ', '_')] = newBank;
         }
 
         public void RefreshParamDiffCaches()

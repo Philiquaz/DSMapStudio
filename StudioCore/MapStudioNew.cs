@@ -21,6 +21,7 @@ using Veldrid.StartupUtilities;
 using System.Windows.Forms;
 using StudioCore.MsbEditor;
 using System.Drawing;
+using Vortice.Vulkan;
 
 namespace StudioCore
 {
@@ -45,7 +46,7 @@ namespace StudioCore
         private event Action<int, int> _resizeHandled;
 
         private int _msaaOption = 0;
-        private TextureSampleCount? _newSampleCount;
+        private VkSampleCountFlags? _newSampleCount;
 
         // Window framebuffer
         private ResourceLayout TextureSamplerResourceLayout;
@@ -105,7 +106,7 @@ namespace StudioCore
                 WindowInitialState = WindowState.Maximized,
                 WindowTitle = $"{_programTitle}",
             };
-            GraphicsDeviceOptions gdOptions = new GraphicsDeviceOptions(false, PixelFormat.R32_Float, true, ResourceBindingModel.Improved, true, true, _colorSrgb);
+            GraphicsDeviceOptions gdOptions = new GraphicsDeviceOptions(false, VkFormat.D32Sfloat, true, true, true, _colorSrgb);
 
 #if DEBUG
             gdOptions.Debug = true;
@@ -114,7 +115,6 @@ namespace StudioCore
             VeldridStartup.CreateWindowAndGraphicsDevice(
                windowCI,
                gdOptions,
-               GraphicsBackend.Vulkan,
                out _window,
                out _gd);
             _window.Resized += () => _windowResized = true;
@@ -125,8 +125,8 @@ namespace StudioCore
 
             var factory = _gd.ResourceFactory;
             TextureSamplerResourceLayout = factory.CreateResourceLayout(new ResourceLayoutDescription(
-               new ResourceLayoutElementDescription("SourceTexture", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-               new ResourceLayoutElementDescription("SourceSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
+               new ResourceLayoutElementDescription("SourceTexture", VkDescriptorType.SampledImage, VkShaderStageFlags.Fragment),
+               new ResourceLayoutElementDescription("SourceSampler", VkDescriptorType.Sampler, VkShaderStageFlags.Fragment)));
 
             Scene.Renderer.Initialize(_gd);
 
@@ -164,8 +164,22 @@ namespace StudioCore
             {
                 if (File.Exists(CFG.Current.LastProjectFile))
                 {
-                    var project = Editor.ProjectSettings.Deserialize(CFG.Current.LastProjectFile);
-                    AttemptLoadProject(project, CFG.Current.LastProjectFile, false);
+                    var settings = Editor.ProjectSettings.Deserialize(CFG.Current.LastProjectFile);
+                    if (settings == null)
+                    {
+                        CFG.Current.LastProjectFile = "";
+                        CFG.Save();
+                    }
+                    else
+                    {
+                        AttemptLoadProject(settings, CFG.Current.LastProjectFile, false);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show($"Project.json at \"{CFG.Current.LastProjectFile}\" does not exist.", "Project Load Error", MessageBoxButtons.OK);
+                    CFG.Current.LastProjectFile = "";
+                    CFG.Save();
                 }
             }
         }
@@ -813,7 +827,10 @@ namespace StudioCore
                         if (browseDlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                         {
                             var settings = Editor.ProjectSettings.Deserialize(browseDlg.FileName);
-                            AttemptLoadProject(settings, browseDlg.FileName);
+                            if (settings != null)
+                            {
+                                AttemptLoadProject(settings, browseDlg.FileName);
+                            }
                         }
                     }
                     if (ImGui.BeginMenu("Recent Projects", Editor.TaskManager.GetLiveThreads().Count == 0 && CFG.Current.RecentProjects.Count > 0))
@@ -827,10 +844,19 @@ namespace StudioCore
                                 if (File.Exists(p.ProjectFile))
                                 {
                                     var settings = Editor.ProjectSettings.Deserialize(p.ProjectFile);
-                                    if (AttemptLoadProject(settings, p.ProjectFile, false))
+                                    if (settings != null)
                                     {
-                                        recent = p;
+                                        if (AttemptLoadProject(settings, p.ProjectFile, false))
+                                        {
+                                            recent = p;
+                                        }
                                     }
+                                }
+                                else
+                                {
+                                    MessageBox.Show($"Project.json at \"{p.ProjectFile}\" does not exist.\nRemoving project from recent projects list.", "Project Load Error", MessageBoxButtons.OK);
+                                    CFG.Current.RecentProjects.Remove(p);
+                                    CFG.Save();
                                 }
                             }
                             if (ImGui.BeginPopupContextItem())
@@ -1479,9 +1505,10 @@ namespace StudioCore
 
             var factory = _gd.ResourceFactory;
             _gd.GetPixelFormatSupport(
-                PixelFormat.R8_G8_B8_A8_UNorm,
-                TextureType.Texture2D,
-                TextureUsage.RenderTarget,
+                VkFormat.R8G8B8A8Unorm,
+                VkImageType.Image2D,
+                VkImageUsageFlags.ColorAttachment,
+                VkImageTiling.Optimal,
                 out PixelFormatProperties properties);
 
             TextureDescription mainColorDesc = TextureDescription.Texture2D(
@@ -1489,9 +1516,11 @@ namespace StudioCore
                 _gd.SwapchainFramebuffer.Height,
                 1,
                 1,
-                PixelFormat.R8_G8_B8_A8_UNorm,
-                TextureUsage.RenderTarget | TextureUsage.Sampled,
-                TextureSampleCount.Count1);
+                VkFormat.R8G8B8A8Unorm,
+                VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.Sampled,
+                VkImageCreateFlags.None,
+                VkImageTiling.Optimal,
+                VkSampleCountFlags.Count1);
             MainWindowColorTexture = factory.CreateTexture(ref mainColorDesc);
             MainWindowFramebuffer = factory.CreateFramebuffer(new FramebufferDescription(null, MainWindowColorTexture));
             //MainWindowResourceSet = factory.CreateResourceSet(new ResourceSetDescription(TextureSamplerResourceLayout, MainWindowResolvedColorView, _gd.PointSampler));

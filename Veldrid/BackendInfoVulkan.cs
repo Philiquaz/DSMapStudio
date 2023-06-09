@@ -1,6 +1,5 @@
 ﻿#if !EXCLUDE_VULKAN_BACKEND
 using System;
-using Veldrid.Vk;
 using Vortice.Vulkan;
 
 namespace Veldrid
@@ -11,9 +10,9 @@ namespace Veldrid
     /// </summary>
     public class BackendInfoVulkan
     {
-        private readonly VkGraphicsDevice _gd;
+        private readonly GraphicsDevice _gd;
 
-        internal BackendInfoVulkan(VkGraphicsDevice gd)
+        internal BackendInfoVulkan(GraphicsDevice gd)
         {
             _gd = gd;
         }
@@ -47,33 +46,13 @@ namespace Veldrid
         /// <param name="layout">The new VkImageLayout value.</param>
         public void OverrideImageLayout(Texture texture, uint layout)
         {
-            VkTexture vkTex = Util.AssertSubtype<Texture, VkTexture>(texture);
-            for (uint layer = 0; layer < vkTex.ArrayLayers; layer++)
+            for (uint layer = 0; layer < texture.ArrayLayers; layer++)
             {
-                for (uint level = 0; level < vkTex.MipLevels; level++)
+                for (uint level = 0; level < texture.MipLevels; level++)
                 {
-                    vkTex.SetImageLayout(level, layer, (VkImageLayout)layout);
+                    texture.SetImageLayout(level, layer, (VkImageLayout)layout);
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets the underlying VkImage wrapped by the given Veldrid Texture. This method can not be used on Textures with
-        /// TextureUsage.Staging.
-        /// </summary>
-        /// <param name="texture">The Texture whose underlying VkImage will be returned.</param>
-        /// <returns>The underlying VkImage for the given Texture.</returns>
-        public ulong GetVkImage(Texture texture)
-        {
-            VkTexture vkTexture = Util.AssertSubtype<Texture, VkTexture>(texture);
-            if ((vkTexture.Usage & TextureUsage.Staging) != 0)
-            {
-                throw new VeldridException(
-                    $"{nameof(GetVkImage)} cannot be used if the {nameof(Texture)} " +
-                    $"has {nameof(TextureUsage)}.{nameof(TextureUsage.Staging)}.");
-            }
-
-            return vkTexture.OptimalDeviceImage.Handle;
         }
 
         /// <summary>
@@ -83,7 +62,7 @@ namespace Veldrid
         /// <param name="layout">The new VkImageLayout value.</param>
         public void TransitionImageLayout(Texture texture, uint layout)
         {
-            _gd.TransitionImageLayout(Util.AssertSubtype<Texture, VkTexture>(texture), (VkImageLayout)layout);
+            _gd.TransitionImageLayout(texture, (VkImageLayout)layout);
         }
     }
 }

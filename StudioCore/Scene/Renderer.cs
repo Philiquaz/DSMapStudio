@@ -11,6 +11,8 @@ using Veldrid;
 using Veldrid.Sdl2;
 using System.Security.Policy;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Vortice.Vulkan;
 
 namespace StudioCore.Scene
 {
@@ -57,7 +59,7 @@ namespace StudioCore.Scene
             {
                 public Pipeline _pipeline;
                 public ResourceSet _objectRS;
-                public IndexFormat _indexFormat;
+                public VkIndexType _indexFormat;
                 public uint _batchStart;
                 public int _bufferIndex;
             }
@@ -67,7 +69,10 @@ namespace StudioCore.Scene
             unsafe public IndirectDrawEncoder(uint initialCallCount)
             {
                 BufferDescription desc = new BufferDescription(
-                    initialCallCount * 20, BufferUsage.IndirectBuffer);
+                    initialCallCount * 20,
+                    VkBufferUsageFlags.IndirectBuffer,
+                    VmaMemoryUsage.AutoPreferDevice,
+                    0);
                 _indirectBuffer = Factory.CreateBuffer(desc);
                 _indirectStagingBuffer = new IndirectDrawIndexedArgumentsPacked[initialCallCount];
                 _directBuffer = new IndirectDrawIndexedArgumentsPacked[initialCallCount];
@@ -104,7 +109,7 @@ namespace StudioCore.Scene
             /// <param name="p">The pipeline to use with rendering</param>
             /// <param name="instanceData">Per instance data resource set</param>
             /// <param name="indexf">Format of the indices (16 or 32-bit)</param>
-            public void AddDraw(ref IndirectDrawIndexedArgumentsPacked args, int buffer, Pipeline p, ResourceSet instanceData, IndexFormat indexf)
+            public void AddDraw(ref IndirectDrawIndexedArgumentsPacked args, int buffer, Pipeline p, ResourceSet instanceData, VkIndexType indexf)
             {
                 // Encode the draw
                 if (_indirectDrawCount[_stagingSet] >= _indirectStagingBuffer.Length)
@@ -195,6 +200,10 @@ namespace StudioCore.Scene
                 {
                     // Copy the indirect buffer to the gpu
                     cl.UpdateBuffer(_indirectBuffer, 0, _indirectStagingBuffer);
+                    cl.Barrier(VkPipelineStageFlags2.Transfer,
+                        VkAccessFlags2.TransferRead,
+                        VkPipelineStageFlags2.DrawIndirect,
+                        VkAccessFlags2.IndirectCommandRead);
                 }
             }
 
@@ -453,7 +462,7 @@ namespace StudioCore.Scene
         private static Queue<(DeviceBuffer, DeviceBuffer, Action<GraphicsDevice>)> _readbackPendingQueue;
 
         private static CommandList TransferCommandList;
-        private static ConcurrentQueue<(DeviceBuffer, DeviceBuffer, Action<GraphicsDevice>)> _asyncTransfersPendingQueue;
+        private static ConcurrentQueue<(DeviceBuffer, DeviceBuffer, VkAccessFlags2, Action<GraphicsDevice>)> _asyncTransfersPendingQueue;
         private static List<(Fence, Action<GraphicsDevice>)> _asyncTransfers;
         private static Queue<Fence> _freeTransferFences;
 
@@ -506,7 +515,7 @@ namespace StudioCore.Scene
 
             TransferCommandList = device.ResourceFactory.CreateCommandList(new CommandListDescription(true));
             _asyncTransfers = new List<(Fence, Action<GraphicsDevice>)>();
-            _asyncTransfersPendingQueue = new ConcurrentQueue<(DeviceBuffer, DeviceBuffer, Action<GraphicsDevice>)>();
+            _asyncTransfersPendingQueue = new ConcurrentQueue<(DeviceBuffer, DeviceBuffer, VkAccessFlags2, Action<GraphicsDevice>)>();
             _freeTransferFences = new Queue<Fence>();
             for (int i = 0; i < 3; i++)
             {
@@ -520,11 +529,11 @@ namespace StudioCore.Scene
 
             SamplerSet.Initialize(device);
 
-            GeometryBufferAllocator = new VertexIndexBufferAllocator(256 * 1024 * 1024, 128 * 1024 * 1024);
-            UniformBufferAllocator = new GPUBufferAllocator(5 * 1024 * 1024, BufferUsage.StructuredBufferReadWrite, (uint)sizeof(InstanceData));
+            GeometryBufferAllocator = new VertexIndexBufferAllocator(Device, 256 * 1024 * 1024, 128 * 1024 * 1024);
+            UniformBufferAllocator = new GPUBufferAllocator(5 * 1024 * 1024, VkBufferUsageFlags.StorageBuffer, (uint)sizeof(InstanceData));
 
-            MaterialBufferAllocator = new GPUBufferAllocator("materials", 5 * 1024 * 1024, BufferUsage.StructuredBufferReadWrite, (uint)sizeof(Material), ShaderStages.Fragment);
-            BoneBufferAllocator = new GPUBufferAllocator("bones", CFG.Current.GFX_Limit_Buffer_Flver_Bone * 64, BufferUsage.StructuredBufferReadWrite, 64, ShaderStages.Vertex);
+            MaterialBufferAllocator = new GPUBufferAllocator("materials", 5 * 1024 * 1024, VkBufferUsageFlags.StorageBuffer, (uint)sizeof(Material), VkShaderStageFlags.Fragment);
+            BoneBufferAllocator = new GPUBufferAllocator("bones", CFG.Current.GFX_Limit_Buffer_Flver_Bone * 64, VkBufferUsageFlags.StorageBuffer, 64, VkShaderStageFlags.Vertex);
             GlobalTexturePool = new TexturePool(device, "globalTextures", 6000);
             GlobalCubeTexturePool = new TexturePool(device, "globalCubeTextures", 500);
 
@@ -578,9 +587,12 @@ namespace StudioCore.Scene
             }
         }
 
-        public static void AddAsyncTransfer(DeviceBuffer dest, DeviceBuffer source, Action<GraphicsDevice> onFinished)
+        public static void AddAsyncTransfer(DeviceBuffer dest, 
+            DeviceBuffer source, 
+            VkAccessFlags2 dstAccessFlags, 
+            Action<GraphicsDevice> onFinished)
         {
-            _asyncTransfersPendingQueue.Enqueue((dest, source, onFinished));
+            _asyncTransfersPendingQueue.Enqueue((dest, source, dstAccessFlags, onFinished));
         }
 
         public static Fence Frame(CommandList drawCommandList, bool backgroundOnly)
@@ -686,11 +698,13 @@ namespace StudioCore.Scene
                 }
 
                 TransferCommandList.Begin();
-                (DeviceBuffer, DeviceBuffer, Action<GraphicsDevice>) t;
+                (DeviceBuffer, DeviceBuffer, VkAccessFlags2, Action<GraphicsDevice>) t;
+                VkAccessFlags2 dstFlags = VkAccessFlags2.None;
                 while (_asyncTransfersPendingQueue.TryDequeue(out t))
                 {
+                    dstFlags |= t.Item3;
                     TransferCommandList.CopyBuffer(t.Item2, 0, t.Item1, 0, t.Item1.SizeInBytes);
-                    _asyncTransfers.Add((fence, t.Item3));
+                    _asyncTransfers.Add((fence, t.Item4));
                 }
                 TransferCommandList.End();
                 Device.SubmitCommands(TransferCommandList, fence);
@@ -751,7 +765,17 @@ namespace StudioCore.Scene
                 _readbackCommandList.Begin();
                 foreach (var entry in _readbackPendingQueue)
                 {
+                    _readbackCommandList.BufferBarrier(entry.Item2,
+                        VkPipelineStageFlags2.AllGraphics,
+                        VkAccessFlags2.MemoryWrite | VkAccessFlags2.ShaderWrite,
+                        VkPipelineStageFlags2.Transfer,
+                        VkAccessFlags2.TransferRead);
                     _readbackCommandList.CopyBuffer(entry.Item2, 0, entry.Item1, 0, entry.Item2.SizeInBytes);
+                    _readbackCommandList.BufferBarrier(entry.Item1,
+                        VkPipelineStageFlags2.Transfer,
+                        VkAccessFlags2.TransferWrite,
+                        VkPipelineStageFlags2.Host,
+                        VkAccessFlags2.HostRead);
                 }
                 _readbackCommandList.End();
                 //Device.SubmitCommands(_readbackCommandList, _readbackFence);

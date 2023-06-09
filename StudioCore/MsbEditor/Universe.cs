@@ -174,7 +174,16 @@ namespace StudioCore.MsbEditor
                 mesh.DrawFilter = RenderFilter.Region;
                 return mesh;
             }
-            return null;
+            else if (obj.WrappedObject is IMsbRegion r5 && r5.Shape is MSB.Shape.Composite co)
+            {
+                // Not fully implemented. Temporarily uses point region marker.
+                var mesh = DebugPrimitiveRenderableProxy.GetPointRegionProxy(_renderScene);
+                mesh.World = obj.GetWorldMatrix();
+                mesh.SetSelectable(obj);
+                mesh.DrawFilter = RenderFilter.Region;
+                return mesh;
+            }
+            throw new NotSupportedException($"No region model proxy was specified for {obj.WrappedObject.GetType()}");
         }
 
         public RenderableProxy GetLightDrawable(Map map, Entity obj)
@@ -215,6 +224,7 @@ namespace StudioCore.MsbEditor
             var mesh = DebugPrimitiveRenderableProxy.GetBoxRegionProxy(_renderScene);
             mesh.World = obj.GetWorldMatrix();
             obj.RenderSceneMesh = mesh;
+            mesh.DrawFilter = RenderFilter.Region;
             mesh.SetSelectable(obj);
             return mesh;
         }
@@ -494,6 +504,7 @@ namespace StudioCore.MsbEditor
                 var mesh = DebugPrimitiveRenderableProxy.GetBoxRegionProxy(_renderScene);
                 mesh.World = obj.GetLocalTransform().WorldMatrix;
                 obj.RenderSceneMesh = mesh;
+                mesh.DrawFilter = RenderFilter.Region;
                 mesh.SetSelectable(obj);
             }
 
