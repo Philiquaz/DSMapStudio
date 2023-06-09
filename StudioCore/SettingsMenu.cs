@@ -1,5 +1,5 @@
 ﻿using ImGuiNET;
-using SoapstoneLib;
+//using SoapstoneLib;
 using StudioCore.Editor;
 using StudioCore.Scene;
 using System;
@@ -457,7 +457,7 @@ namespace StudioCore
                 {
                     ImGui.Indent();
 
-                    string running = SoapstoneServer.GetRunningPort() is int port ? $"running on port {port}" : "not running";
+                    string running = "not running";//SoapstoneServer.GetRunningPort() is int port ? $"running on port {port}" : "not running";
                     ImGui.Text($"The server is {running}.\nIt is not accessible over the network, only to other programs on this computer.\nPlease restart the program for changes to take effect.");
                     ImGui.Checkbox("Enable cross-editor features", ref CFG.Current.EnableSoapstone);
 

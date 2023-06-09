@@ -13,7 +13,7 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Threading.Tasks;
-using SoapstoneLib;
+//using SoapstoneLib;
 using StudioCore.ParamEditor;
 using Veldrid;
 using Veldrid.Sdl2;
@@ -354,7 +354,7 @@ namespace StudioCore
 
             if (CFG.Current.EnableSoapstone)
             {
-                SoapstoneServer.RunAsync(KnownServer.DSMapStudio, _soapstoneService);
+                //SoapstoneServer.RunAsync(KnownServer.DSMapStudio, _soapstoneService);
             }
 
             if (CFG.Current.EnableCheckProgramUpdate)
