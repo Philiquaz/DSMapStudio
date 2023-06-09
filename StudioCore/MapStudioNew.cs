@@ -30,6 +30,8 @@ namespace StudioCore
         private static string _version = System.Windows.Forms.Application.ProductVersion;
         private static string _programTitle = $"Dark Souls Map Studio version {_version}";
 
+        public Boolean LaunchNoVulkan = false;
+
         private Sdl2Window _window;
         private GraphicsDevice _gd;
         private CommandList MainWindowCommandList;
@@ -87,8 +89,10 @@ namespace StudioCore
         private bool _showImGuiDebugLogWindow = false;
         private bool _showImGuiStackToolWindow = false;
 
-        public MapStudioNew()
+        public MapStudioNew(bool noVulkan)
         {
+            LaunchNoVulkan = noVulkan;
+
             CFG.AttemptLoadOrDefault();
 
             if (UseRenderdoc)
