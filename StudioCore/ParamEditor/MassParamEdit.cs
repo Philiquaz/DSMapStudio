@@ -8,7 +8,8 @@ using FSParam;
 using ImGuiNET;
 using SoulsFormats;
 using StudioCore.Editor;
-using StudioCore.ParamEditor;
+using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
 
 namespace StudioCore.ParamEditor
 {
@@ -38,7 +39,8 @@ namespace StudioCore.ParamEditor
         {
             try
             {
-                return Convert.ChangeType(dynamicFunc(instance), instance.GetType());
+                var x = dynamicFunc(instance);
+                return Convert.ChangeType(x, instance.GetType());
             }
             catch
             {
@@ -747,6 +749,21 @@ namespace StudioCore.ParamEditor
                 MassParamEdit.massEditVars[args[0]] = MassParamEdit.WithDynamicOf(MassParamEdit.massEditVars[args[0]], (x) => ctx);
                 return ctx;
             }));
+            operations.Add("f(x)", (new string[]{"expression in x"}, "Runs a C# function on the given input", (ctx, args) =>
+            {
+                var so = ScriptOptions.Default.AddReferences(typeof(Math).Assembly, typeof(MassParamEdit).Assembly, typeof(Param).Assembly, typeof(PARAM).Assembly);
+                var lambda = CSharpScript.Create(args[0], so, typeof(MassEditInputType));
+                var del = lambda.CreateDelegate();
+                return MassParamEdit.WithDynamicOf(ctx, (v) => del(new MassEditInputType(v)).Result);
+            }));
+        }
+        public class MassEditInputType
+        {
+            public MassEditInputType(object x)
+            {
+                this.x = x;
+            }
+            public dynamic x;
         }
     }
     public class MEOperationArgument
