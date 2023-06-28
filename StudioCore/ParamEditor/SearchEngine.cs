@@ -237,6 +237,10 @@ namespace StudioCore.Editor
                 Regex rx = lenient ? new Regex(args[1], RegexOptions.IgnoreCase) : new Regex($@"^{args[1]}$");
                 return noContext((param)=>param.Item1 != auxBank ? false : rx.IsMatch(auxBank.GetKeyForParam(param.Item2) == null ? "" : auxBank.GetKeyForParam(param.Item2)));
             }, ()=>ParamBank.AuxBanks.Count > 0 && CFG.Current.Param_AdvancedMassedit));
+            filterList.Add("c#", newCmd(new string[]{"boolean c# expression for Param x"}, "Evaluates the expression for the Param x", (args, lenient)=>{
+                var del = MassEditCompiledScriptEngine.getCompiledScript(args[0]);
+                return noContext((param) => Convert.ToBoolean(del(new MassEditInputType(param.Item2)).Result));
+            }));
             defaultFilter = newCmd(new string[]{"param name (regex)"}, "Selects all params whose name matches the given regex", (args, lenient)=>{
                 Regex rx = lenient ? new Regex(args[0], RegexOptions.IgnoreCase) : new Regex($@"^{args[0]}$");
                 return noContext((param)=>param.Item1 != bank ? false : rx.IsMatch(bank.GetKeyForParam(param.Item2) == null ? "" : bank.GetKeyForParam(param.Item2)));
@@ -478,6 +482,10 @@ namespace StudioCore.Editor
                     };
                 };
             }, ()=>CFG.Current.Param_AdvancedMassedit));
+            filterList.Add("c#", newCmd(new string[]{"boolean c# expression for row x"}, "Evaluates the expression for the row x", (args, lenient)=>{
+                var del = MassEditCompiledScriptEngine.getCompiledScript(args[0]);
+                return noContext((row) => Convert.ToBoolean(del(new MassEditInputType(row)).Result));
+            }));
             defaultFilter = newCmd(new string[]{"row ID or Name (regex)"}, "Selects rows where either the ID or Name matches the given regex, except in strict/massedit mode", (args, lenient)=>{
                 if (!lenient)
                     return noContext((row)=>false);
@@ -565,6 +573,10 @@ namespace StudioCore.Editor
                         };
                 };
             }, ()=>ParamBank.AuxBanks.Count > 0));
+            filterList.Add("c#", newCmd(new string[]{"boolean c# expression for Param.Column x"}, "Evaluates the expression for the Param.Column x", (args, lenient)=>{
+                var del = MassEditCompiledScriptEngine.getCompiledScript(args[0]);
+                return noContext((col) => Convert.ToBoolean(del(new MassEditInputType(col.Item2)).Result));
+            }));
             filterList.Add("sftype", newCmd(new string[]{"paramdef type"}, "Selects cells/fields where the field's data type, as enumerated by soulsformats, matches the given regex", (args, lenient) => {
                 Regex r = new Regex('^'+args[0]+'$', lenient ? RegexOptions.IgnoreCase : RegexOptions.None); //Leniency rules break from the norm
                 return (row) => (col) => r.IsMatch(col.GetColumnSfType());

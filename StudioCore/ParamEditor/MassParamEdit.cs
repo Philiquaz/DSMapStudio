@@ -686,6 +686,14 @@ namespace StudioCore.ParamEditor
                 MassParamEdit.massEditVars.Clear();
                 return true;
             }));
+            operations.Add("c#", newOp(new string[]{"expression in ParamBank x"}, "Runs a C# function on the given input", (ctx, args) =>
+            {
+                var del = MassEditCompiledScriptEngine.getCompiledScript(args[0]);
+                var res = del(new MassEditInputType(ParamBank.PrimaryBank));
+                if (res.Exception != null)
+                    throw res.Exception;
+                return true;
+            }));  
         }
     }
     public class MERowOperationStep : MEOperationStep<(string, Param.Row), (Param, Param.Row)>
@@ -742,7 +750,10 @@ namespace StudioCore.ParamEditor
             operations.Add("c#", newOp(new string[]{"expression in row x"}, "Runs a C# function on the given input", (ctx, args) =>
             {
                 var del = MassEditCompiledScriptEngine.getCompiledScript(args[0]);
-                Param.Row row = (Param.Row) del(new MassEditInputType(ctx.Item2)).Result;
+                var res = del(new MassEditInputType(ctx.Item2));
+                if (res.Exception != null)
+                    throw res.Exception;
+                Param.Row row = (Param.Row) res.Result;
                 Param p = ParamBank.PrimaryBank.Params[ctx.Item1];
                 return (p, row);
             }));      
@@ -783,7 +794,12 @@ namespace StudioCore.ParamEditor
             operations.Add("c#", newOp(new string[]{"expression in value x"}, "Runs a C# function on the given input", (ctx, args) =>
             {
                 var del = MassEditCompiledScriptEngine.getCompiledScript(args[0]);
-                return MassParamEdit.WithDynamicOf(ctx, (v) => del(new MassEditInputType(v)).Result);
+                return MassParamEdit.WithDynamicOf(ctx, (v) => {
+                    var res = del(new MassEditInputType(v));
+                    if (res.Exception != null)
+                        throw res.Exception;
+                    return res.Result;
+                });
             }));
         }
     }
@@ -1044,10 +1060,10 @@ namespace StudioCore.ParamEditor
             this.shouldShow = shouldShow;
         }
     }
-    class MassEditCompiledScriptEngine
+    public class MassEditCompiledScriptEngine
     {
         static Dictionary<string, ScriptRunner<object>> scriptCache = new Dictionary<string, ScriptRunner<object>>();
-        internal static ScriptRunner<object> getCompiledScript(string script)
+        public static ScriptRunner<object> getCompiledScript(string script)
         {
             if (scriptCache.ContainsKey(script))
                 return scriptCache[script];
@@ -1058,7 +1074,7 @@ namespace StudioCore.ParamEditor
             scriptCache[script] = del;
             return del;
         }
-        internal static void clearScriptCache()
+        public static void clearScriptCache()
         {
             scriptCache.Clear();
         }
