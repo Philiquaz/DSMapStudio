@@ -149,9 +149,9 @@ namespace StudioCore.ParamEditor
         int argc;
         Func<int, Param, Func<int, Param.Row, Func<int, (PseudoColumn, Param.Column), string>>>[] paramArgFuncs;
         
-        Func<ParamEditorSelectionState, string[], bool> globalFunc = null;
-        Func<(string, Param.Row), string[], (Param, Param.Row)> rowFunc = null;
-        Func<object, string[], object> genericFunc = null; 
+        Func<string[], Func<ParamEditorSelectionState, bool>> globalFunc = null;
+        Func<string[], Func<(string, Param.Row), (Param, Param.Row)>> rowFunc = null;
+        Func<string[], Func<object, object>> genericFunc = null; 
 
 
         Func<Func<int, (PseudoColumn, Param.Column), string>[], string, Param.Row, List<EditorAction>, MassEditResult> rowOpOrCellStageFunc = null;
@@ -294,7 +294,7 @@ namespace StudioCore.ParamEditor
         private MassEditResult ExecGlobalOp()
         {
             string[] globalArgValues = paramArgFuncs.Select((f) => f(-1, null)(-1, null)(-1, (PseudoColumn.None, null))).ToArray();
-            bool result = globalFunc(context, globalArgValues);
+            bool result = globalFunc(globalArgValues)(context);
             if (!result)
                 return new MassEditResult(MassEditResultType.OPERATIONERROR, "performing global operation "+globalOperation);
             return new MassEditResult(MassEditResultType.SUCCESS, "");
@@ -312,7 +312,7 @@ namespace StudioCore.ParamEditor
         }
         private MassEditResult ExecVarOpStage(string var, string[] args)
         {
-            MassParamEdit.massEditVars[var] = genericFunc(MassParamEdit.massEditVars[var], args);
+            MassParamEdit.massEditVars[var] = genericFunc(args)(MassParamEdit.massEditVars[var]);
             bool result = true; // Anything that practicably can go wrong 
             if (!result)
                 return new MassEditResult(MassEditResultType.OPERATIONERROR, "performing var operation "+varOperation);
@@ -361,25 +361,13 @@ namespace StudioCore.ParamEditor
                 var res = rowOpOrCellStageFunc(rowArgFunc, paramname, row, partialActions);
                 if (res.Type != MassEditResultType.SUCCESS)
                     return res;
-                /*if (cellSelector == null)
-                {
-                    var res = ExecRowOp(rowArgFunc, paramname, row, partialActions);
-                    if (res.Type != MassEditResultType.SUCCESS)
-                        return res;
-                }
-                else
-                {
-                    var res = ExecCellStage(rowArgFunc, paramname, row, partialActions);
-                    if (res.Type != MassEditResultType.SUCCESS)
-                        return res;
-                }*/
             }
             return new MassEditResult(MassEditResultType.SUCCESS, "");
         }
         private MassEditResult ExecRowOp(Func<int, (PseudoColumn, Param.Column), string>[] rowArgFunc, string paramname, Param.Row row, List<EditorAction> partialActions)
         {
             var rowArgValues = rowArgFunc.Select((argV, i) => argV(-1, (PseudoColumn.None, null))).ToArray();
-            var (p2, rs) = rowFunc((paramname, row), rowArgValues);
+            var (p2, rs) = rowFunc(rowArgValues)((paramname, row));
             if (p2 == null)
                 return new MassEditResult(MassEditResultType.OPERATIONERROR, $@"Could not perform operation {rowOperation} {String.Join(' ', rowArgValues)} on row");
             if (rs != null)
@@ -405,7 +393,7 @@ namespace StudioCore.ParamEditor
             string errHelper = null;
             try
             {
-                res = genericFunc(row.Get(col), cellArgValues);
+                res = genericFunc(cellArgValues)(row.Get(col));
             }
             catch (FormatException e)
             {
@@ -617,7 +605,7 @@ namespace StudioCore.ParamEditor
     public class MEOperationStep<T, O>
     {
         internal Dictionary<string, MEOperation<T, O>> operations = new Dictionary<string, MEOperation<T, O>>();
-        internal MEOperation<T, O> newOp(string[] args, string wiki, Func<T, string[], O> op)
+        internal MEOperation<T, O> newOp(string[] args, string wiki, Func<string[], Func<T, O>> op)
         {
             return new MEOperation<T, O>(args, wiki, op);
         }
@@ -647,8 +635,8 @@ namespace StudioCore.ParamEditor
     {
         public string[] args;
         public string wiki;
-        public Func<T, string[], O> op;
-        public MEOperation(string[] args, string wiki, Func<T, string[], O> op)
+        public Func<string[], Func<T, O>> op;
+        public MEOperation(string[] args, string wiki, Func<string[], Func<T, O>> op)
         {
             this.args = args;
             this.wiki = wiki;
@@ -660,12 +648,12 @@ namespace StudioCore.ParamEditor
         public static MEGlobalOperationStep globalOps = new MEGlobalOperationStep();
         internal override void Setup()
         {
-            operations.Add("clear", newOp(new string[0], "Clears clipboard param and rows", (selectionState, args) => {
+            operations.Add("clear", newOp(new string[0], "Clears clipboard param and rows", (args) => (selectionState) => {
                 ParamBank.ClipboardParam = null;
                 ParamBank.ClipboardRows.Clear();
                 return true;
             }));
-            operations.Add("newvar", newOp(new string[]{"variable name", "value"}, "Creates a variable with the given value, and the type of that value", (selectionState, args) => {
+            operations.Add("newvar", newOp(new string[]{"variable name", "value"}, "Creates a variable with the given value, and the type of that value", (args) => (selectionState) => {
                 int asInt;
                 double asDouble;
                 if (int.TryParse(args[1], out asInt))
@@ -676,7 +664,7 @@ namespace StudioCore.ParamEditor
                     MassParamEdit.massEditVars[args[0]] = args[1];
                 return true;
             }));
-            operations.Add("clearvars", newOp(new string[0], "Deletes all variables", (selectionState, args) => {
+            operations.Add("clearvars", newOp(new string[0], "Deletes all variables", (args) => (selectionState) => {
                 MassParamEdit.massEditVars.Clear();
                 return true;
             }));
@@ -687,7 +675,7 @@ namespace StudioCore.ParamEditor
         public static MERowOperationStep rowOps = new MERowOperationStep();
         internal override void Setup()
         {
-            operations.Add("copy", newOp(new string[0], "Adds the selected rows into clipboard. If the clipboard param is different, the clipboard is emptied first", (paramAndRow, args) => {
+            operations.Add("copy", newOp(new string[0], "Adds the selected rows into clipboard. If the clipboard param is different, the clipboard is emptied first", (args) => (paramAndRow) => {
                 string paramKey = paramAndRow.Item1;
                 Param.Row row = paramAndRow.Item2;
                 if (paramKey == null)
@@ -704,26 +692,28 @@ namespace StudioCore.ParamEditor
                 ParamBank.ClipboardRows.Add(new Param.Row(row, p));
                 return (p, null);
             }));
-            operations.Add("copyN", newOp(new string[]{"count"}, "Adds the selected rows into clipboard the given number of times. If the clipboard param is different, the clipboard is emptied first", (paramAndRow, args) => {
-                string paramKey = paramAndRow.Item1;
-                Param.Row row = paramAndRow.Item2;
-                if (paramKey == null)
-                    throw new Exception($@"Could not locate param");
-                if (!ParamBank.PrimaryBank.Params.ContainsKey(paramKey))
-                    throw new Exception($@"Could not locate param {paramKey}");
+            operations.Add("copyN", newOp(new string[]{"count"}, "Adds the selected rows into clipboard the given number of times. If the clipboard param is different, the clipboard is emptied first", (args) => {
                 uint count = uint.Parse(args[0]);
-                Param p = ParamBank.PrimaryBank.Params[paramKey];
-                // Only supporting single param in clipboard
-                if (ParamBank.ClipboardParam != paramKey)
-                {
-                    ParamBank.ClipboardParam = paramKey;
-                    ParamBank.ClipboardRows.Clear();
-                }
-                for (int i=0; i<count; i++)
-                    ParamBank.ClipboardRows.Add(new Param.Row(row, p));
-                return (p, null);
+                return (paramAndRow) => {
+                    string paramKey = paramAndRow.Item1;
+                    Param.Row row = paramAndRow.Item2;
+                    if (paramKey == null)
+                        throw new Exception($@"Could not locate param");
+                    if (!ParamBank.PrimaryBank.Params.ContainsKey(paramKey))
+                        throw new Exception($@"Could not locate param {paramKey}");
+                    Param p = ParamBank.PrimaryBank.Params[paramKey];
+                    // Only supporting single param in clipboard
+                    if (ParamBank.ClipboardParam != paramKey)
+                    {
+                        ParamBank.ClipboardParam = paramKey;
+                        ParamBank.ClipboardRows.Clear();
+                    }
+                    for (int i=0; i<count; i++)
+                        ParamBank.ClipboardRows.Add(new Param.Row(row, p));
+                    return (p, null);
+                };
             }));
-            operations.Add("paste", newOp(new string[0], "Adds the selected rows to the primary regulation or parambnd in the selected param", (paramAndRow, args) => {
+            operations.Add("paste", newOp(new string[0], "Adds the selected rows to the primary regulation or parambnd in the selected param", (args) => (paramAndRow) => {
                 string paramKey = paramAndRow.Item1;
                 Param.Row row = paramAndRow.Item2;
                 if (paramKey == null)
@@ -740,39 +730,53 @@ namespace StudioCore.ParamEditor
         public static MEValueOperationStep valueOps = new MEValueOperationStep();
         internal override void Setup()
         {
-            operations.Add("=", newOp(new string[]{"number or text"}, "Assigns the given value to the selected values. Will attempt conversion to the value's data type", (ctx, args) => MassParamEdit.WithDynamicOf(ctx, (v) => args[0])));
-            operations.Add("+", newOp(new string[]{"number or text"}, "Adds the number to the selected values, or appends text if that is the data type of the values", (ctx, args) => MassParamEdit.WithDynamicOf(ctx, (v) => {
+            operations.Add("=", newOp(new string[]{"number or text"}, "Assigns the given value to the selected values. Will attempt conversion to the value's data type", (args) => (ctx) => MassParamEdit.WithDynamicOf(ctx, (v) => args[0])));
+            operations.Add("+", newOp(new string[]{"number or text"}, "Adds the number to the selected values, or appends text if that is the data type of the values", (args) => {
                 double val;
                 if (double.TryParse(args[0], out val))
-                    return v + val;
-                return v + args[0];
-                })));
-            operations.Add("-", newOp(new string[]{"number"}, "Subtracts the number from the selected values", (ctx, args) => MassParamEdit.WithDynamicOf(ctx, (v) => v - double.Parse(args[0]))));
-            operations.Add("*", newOp(new string[]{"number"}, "Multiplies selected values by the number", (ctx, args) => MassParamEdit.WithDynamicOf(ctx, (v) => v * double.Parse(args[0]))));
-            operations.Add("/", newOp(new string[]{"number"}, "Divides the selected values by the number", (ctx, args) => MassParamEdit.WithDynamicOf(ctx, (v) => v / double.Parse(args[0]))));
-            operations.Add("%", newOp(new string[]{"number"}, "Gives the remainder when the selected values are divided by the number", (ctx, args) => MassParamEdit.WithDynamicOf(ctx, (v) => v % double.Parse(args[0]))));
-            operations.Add("scale", newOp(new string[]{"factor number", "center number"}, "Multiplies the difference between the selected values and the center number by the factor number", (ctx, args) => {
+                    return (ctx) => MassParamEdit.WithDynamicOf(ctx, (v) =>  v + val);
+                return (ctx) => MassParamEdit.WithDynamicOf(ctx, (v) => v + args[0]);
+                }));
+            operations.Add("-", newOp(new string[]{"number"}, "Subtracts the number from the selected values", (args) => {
+                double val = double.Parse(args[0]);
+                return (ctx) => MassParamEdit.WithDynamicOf(ctx, (v) => v - val);
+            }));
+            operations.Add("*", newOp(new string[]{"number"}, "Multiplies selected values by the number", (args) => {
+                double val = double.Parse(args[0]);
+                return (ctx) => MassParamEdit.WithDynamicOf(ctx, (v) => v * val);
+            }));
+            operations.Add("/", newOp(new string[]{"number"}, "Divides the selected values by the number", (args) => {
+                double val = double.Parse(args[0]);
+                return (ctx) => MassParamEdit.WithDynamicOf(ctx, (v) => v / val);
+            }));
+            operations.Add("%", newOp(new string[]{"number"}, "Gives the remainder when the selected values are divided by the number", (args) => {
+                double val = double.Parse(args[0]);
+                return (ctx) => MassParamEdit.WithDynamicOf(ctx, (v) => v % val);
+            }));
+            operations.Add("scale", newOp(new string[]{"factor number", "center number"}, "Multiplies the difference between the selected values and the center number by the factor number", (args) => {
                 double opp1 = double.Parse(args[0]);
                 double opp2 = double.Parse(args[1]);
-                return MassParamEdit.WithDynamicOf(ctx, (v) => {
-                    return (v - opp2) * opp1 + opp2;
-                });
+                return (ctx) => MassParamEdit.WithDynamicOf(ctx, (v) => (v - opp2) * opp1 + opp2);
             }));
-            operations.Add("replace", newOp(new string[]{"text to replace", "new text"}, "Interprets the selected values as text and replaces all occurances of the text to replace with the new text", (ctx, args) => MassParamEdit.WithDynamicOf(ctx, (v) => v.Replace(args[0], args[1]))));
-            operations.Add("replacex", newOp(new string[]{"text to replace (regex)", "new text (w/ groups)"}, "Interprets the selected values as text and replaces all occurances of the given regex with the replacement, supporting regex groups", (ctx, args) => {
+            operations.Add("replace", newOp(new string[]{"text to replace", "new text"}, "Interprets the selected values as text and replaces all occurances of the text to replace with the new text", (args) => (ctx) => MassParamEdit.WithDynamicOf(ctx, (v) => v.Replace(args[0], args[1]))));
+            operations.Add("replacex", newOp(new string[]{"text to replace (regex)", "new text (w/ groups)"}, "Interprets the selected values as text and replaces all occurances of the given regex with the replacement, supporting regex groups", (args) => {
                 Regex rx = new Regex(args[0]);
-                return MassParamEdit.WithDynamicOf(ctx, (v) => rx.Replace(v, args[1]));
+                return (ctx) => {
+                    return MassParamEdit.WithDynamicOf(ctx, (v) => rx.Replace(v, args[1]));
+                };
             }));
-            operations.Add("store", newOp(new string[]{"variable name"}, "Overwrites the given variable's value with the selected value, attempting to convert type as necessary", (ctx, args) => {
+            operations.Add("store", newOp(new string[]{"variable name"}, "Overwrites the given variable's value with the selected value, attempting to convert type as necessary", (args) => (ctx) => {
                 MassParamEdit.massEditVars[args[0]] = MassParamEdit.WithDynamicOf(MassParamEdit.massEditVars[args[0]], (x) => ctx);
                 return ctx;
             }));
-            operations.Add("f(x)", newOp(new string[]{"expression in x"}, "Runs a C# function on the given input", (ctx, args) =>
-            {
+            operations.Add("C#", newOp(new string[]{"expression in x"}, "Runs a C# function on the given input", (args) => {
                 var so = ScriptOptions.Default.AddReferences(typeof(Math).Assembly, typeof(MassParamEdit).Assembly, typeof(Param).Assembly, typeof(PARAM).Assembly);
                 var lambda = CSharpScript.Create(args[0], so, typeof(MassEditInputType));
                 var del = lambda.CreateDelegate();
-                return MassParamEdit.WithDynamicOf(ctx, (v) => del(new MassEditInputType(v)).Result);
+                return (ctx) =>
+                {
+                    return MassParamEdit.WithDynamicOf(ctx, (v) => del(new MassEditInputType(v)).Result);
+                };
             }));
         }
         public class MassEditInputType
