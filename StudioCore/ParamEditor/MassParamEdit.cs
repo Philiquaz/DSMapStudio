@@ -120,10 +120,12 @@ namespace StudioCore.ParamEditor
                     changeCount += actions.Count;
                     childManager.ExecuteAction(new CompoundAction(actions));
                 }
+                MassEditCompiledScriptEngine.clearScriptCache();
                 return (new MassEditResult(MassEditResultType.SUCCESS, $@"{changeCount} cells affected"), childManager);
             }
             catch (Exception e)
             {
+                MassEditCompiledScriptEngine.clearScriptCache();
                 return (new MassEditResult(MassEditResultType.PARSEERROR, $@"Unknown parsing error: "+e.ToString()), null);
             }
         }
@@ -415,9 +417,13 @@ namespace StudioCore.ParamEditor
             {
                 errHelper = "Cannot cast to correct type";
             }
+            catch (OverflowException e)
+            {
+                errHelper = "A value was too large for its data type";
+            }
             catch (Exception e)
             {
-                errHelper = "Unknown error";
+                errHelper = e.Message + "\n" + e.StackTrace;
             }
             if (res == null && col.Item1 == PseudoColumn.ID)
                 return new MassEditResult(MassEditResultType.OPERATIONERROR, $@"Could not perform operation {cellOperation} {String.Join(' ', cellArgValues)} on ID ({errHelper})");
@@ -732,7 +738,14 @@ namespace StudioCore.ParamEditor
                     throw new Exception($@"Could not locate param {paramKey}");
                 Param p = ParamBank.PrimaryBank.Params[paramKey];
                 return (p, new Param.Row(row, p));
-            }));         
+            }));
+            operations.Add("c#", newOp(new string[]{"expression in row x"}, "Runs a C# function on the given input", (ctx, args) =>
+            {
+                var del = MassEditCompiledScriptEngine.getCompiledScript(args[0]);
+                Param.Row row = (Param.Row) del(new MassEditInputType(ctx.Item2)).Result;
+                Param p = ParamBank.PrimaryBank.Params[ctx.Item1];
+                return (p, row);
+            }));      
         }
     }
     public class MEValueOperationStep : MEOperationStep<object, object>
@@ -767,21 +780,11 @@ namespace StudioCore.ParamEditor
                 MassParamEdit.massEditVars[args[0]] = MassParamEdit.WithDynamicOf(MassParamEdit.massEditVars[args[0]], (x) => ctx);
                 return ctx;
             }));
-            operations.Add("c#", newOp(new string[]{"expression in x"}, "Runs a C# function on the given input", (ctx, args) =>
+            operations.Add("c#", newOp(new string[]{"expression in value x"}, "Runs a C# function on the given input", (ctx, args) =>
             {
-                var so = ScriptOptions.Default.AddReferences(typeof(Math).Assembly, typeof(MassParamEdit).Assembly, typeof(Param).Assembly, typeof(PARAM).Assembly);
-                var lambda = CSharpScript.Create(args[0], so, typeof(MassEditInputType));
-                var del = lambda.CreateDelegate();
+                var del = MassEditCompiledScriptEngine.getCompiledScript(args[0]);
                 return MassParamEdit.WithDynamicOf(ctx, (v) => del(new MassEditInputType(v)).Result);
             }));
-        }
-        public class MassEditInputType
-        {
-            public MassEditInputType(object x)
-            {
-                this.x = x;
-            }
-            public dynamic x;
         }
     }
     public class MEOperationArgument
@@ -1040,5 +1043,32 @@ namespace StudioCore.ParamEditor
             this.func = func;
             this.shouldShow = shouldShow;
         }
+    }
+    class MassEditCompiledScriptEngine
+    {
+        static Dictionary<string, ScriptRunner<object>> scriptCache = new Dictionary<string, ScriptRunner<object>>();
+        internal static ScriptRunner<object> getCompiledScript(string script)
+        {
+            if (scriptCache.ContainsKey(script))
+                return scriptCache[script];
+            var so = ScriptOptions.Default.AddReferences(typeof(Math).Assembly, typeof(MassParamEdit).Assembly, typeof(Param).Assembly, typeof(PARAM).Assembly, typeof(Action).Assembly)
+            .AddImports("System", "System.Collections.Generic", "System.Linq", "System.Text.RegularExpressions", "System.Numerics", "FSParam", "SoulsFormats", "StudioCore.Editor", "StudioCore.ParamEditor");
+            var lambda = CSharpScript.Create(script, so, typeof(MassEditInputType));
+            var del = lambda.CreateDelegate();
+            scriptCache[script] = del;
+            return del;
+        }
+        internal static void clearScriptCache()
+        {
+            scriptCache.Clear();
+        }
+    }
+    public class MassEditInputType
+    {
+        public MassEditInputType(object x)
+        {
+            this.x = x;
+        }
+        public dynamic x;
     }
 }
