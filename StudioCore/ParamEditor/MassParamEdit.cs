@@ -767,7 +767,7 @@ namespace StudioCore.ParamEditor
                 MassParamEdit.massEditVars[args[0]] = MassParamEdit.WithDynamicOf(MassParamEdit.massEditVars[args[0]], (x) => ctx);
                 return ctx;
             }));
-            operations.Add("f(x)", newOp(new string[]{"expression in x"}, "Runs a C# function on the given input", (ctx, args) =>
+            operations.Add("c#", newOp(new string[]{"expression in x"}, "Runs a C# function on the given input", (ctx, args) =>
             {
                 var so = ScriptOptions.Default.AddReferences(typeof(Math).Assembly, typeof(MassParamEdit).Assembly, typeof(Param).Assembly, typeof(PARAM).Assembly);
                 var lambda = CSharpScript.Create(args[0], so, typeof(MassEditInputType));
