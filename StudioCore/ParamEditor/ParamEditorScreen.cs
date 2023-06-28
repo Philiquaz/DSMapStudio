@@ -855,7 +855,7 @@ namespace StudioCore.ParamEditor
                 UIHints.AddImGuiHintButton("MassEditHint", ref UIHints.MassEditHint);
                 ImGui.InputTextMultiline("##MEditRegexInput", ref _currentMEditRegexInput, 65536, new Vector2(1024, ImGui.GetTextLineHeightWithSpacing() * 4) * scale);
 
-                if (ImGui.Selectable("Submit", false, ImGuiSelectableFlags.DontClosePopups))
+                if (ImGui.Selectable("Submit", false, ImGuiSelectableFlags.DontClosePopups | (string.IsNullOrWhiteSpace(_currentMEditRegexInput) ? ImGuiSelectableFlags.Disabled : ImGuiSelectableFlags.None)))
                 {
                     _activeView._selection.sortSelection();
                     (MassEditResult r, ActionManager child) = MassParamEditRegex.PerformMassEdit(ParamBank.PrimaryBank, _currentMEditRegexInput, _activeView._selection);
