@@ -125,9 +125,9 @@ namespace StudioCore.ParamEditor
         static AutoFillSearchEngine<bool, (ParamBank, Param)> autoFillPse = new ("pse", ParamSearchEngine.pse);
         static AutoFillSearchEngine<(ParamBank, Param), Param.Row> autoFillRse = new ("rse", RowSearchEngine.rse);
         static AutoFillSearchEngine<(string, Param.Row), (PseudoColumn, Param.Column)> autoFillCse = new ("cse", CellSearchEngine.cse);
-        private static string[] _autoFillArgsGop = Enumerable.Repeat("", MEGlobalOperation.globalOps.AvailableCommands().Sum((x) => x.Item2.Length)).ToArray();
-        private static string[] _autoFillArgsRop = Enumerable.Repeat("", MERowOperation.rowOps.AvailableCommands().Sum((x) => x.Item2.Length)).ToArray();
-        private static string[] _autoFillArgsCop = Enumerable.Repeat("", MEValueOperation.valueOps.AvailableCommands().Sum((x) => x.Item2.Length)).ToArray();
+        private static string[] _autoFillArgsGop = Enumerable.Repeat("", MEGlobalOperationStep.globalOps.AvailableCommands().Sum((x) => x.Item2.Length)).ToArray();
+        private static string[] _autoFillArgsRop = Enumerable.Repeat("", MERowOperationStep.rowOps.AvailableCommands().Sum((x) => x.Item2.Length)).ToArray();
+        private static string[] _autoFillArgsCop = Enumerable.Repeat("", MEValueOperationStep.valueOps.AvailableCommands().Sum((x) => x.Item2.Length)).ToArray();
         private static string[] _autoFillArgsOa = Enumerable.Repeat("", MEOperationArgument.arg.AllArguments().Sum((x) => x.Item2.Length)).ToArray();
         private static string _literalArg = "";
 
@@ -193,11 +193,11 @@ namespace StudioCore.ParamEditor
                         if (inheritedCommand2 != null)
                             ImGui.TextColored(PREVIEWCOLOUR, inheritedCommand2);
                         ImGui.TextColored(HINTCOLOUR, "Select field operation...");
-                        return MassEditAutoFillForOperation(MEValueOperation.valueOps, ref _autoFillArgsCop, ";", null);
+                        return MassEditAutoFillForOperation(MEValueOperationStep.valueOps, ref _autoFillArgsCop, ";", null);
                     });
                     ImGui.Separator();
                     ImGui.TextColored(HINTCOLOUR, "Select row operation...");
-                    string res2 = MassEditAutoFillForOperation(MERowOperation.rowOps, ref _autoFillArgsRop, ";", null);
+                    string res2 = MassEditAutoFillForOperation(MERowOperationStep.rowOps, ref _autoFillArgsRop, ";", null);
                     if (res1 != null)
                         return res1;
                     return res2;
@@ -221,14 +221,14 @@ namespace StudioCore.ParamEditor
                             if (inheritedCommand3 != null)
                                 ImGui.TextColored(AutoFill.PREVIEWCOLOUR, inheritedCommand3);
                             ImGui.TextColored(HINTCOLOUR, "Select field operation...");
-                            return MassEditAutoFillForOperation(MEValueOperation.valueOps, ref _autoFillArgsCop, ";", null);
+                            return MassEditAutoFillForOperation(MEValueOperationStep.valueOps, ref _autoFillArgsCop, ";", null);
                         });
                         string res2 = null;
                         if (CFG.Current.Param_AdvancedMassedit)
                         {
                             ImGui.Separator();
                             ImGui.TextColored(HINTCOLOUR, "Select row operation...");
-                            res2 = MassEditAutoFillForOperation(MERowOperation.rowOps, ref _autoFillArgsRop, ";", null);
+                            res2 = MassEditAutoFillForOperation(MERowOperationStep.rowOps, ref _autoFillArgsRop, ";", null);
                         }
                         if (res1 != null)
                             return res1;
@@ -243,7 +243,7 @@ namespace StudioCore.ParamEditor
                     ImGui.Separator();
                     ImGui.PushID("globalop");
                     ImGui.TextColored(HINTCOLOUR, "Select global operation...");
-                    result3 = MassEditAutoFillForOperation(MEGlobalOperation.globalOps, ref _autoFillArgsGop, ";", null);
+                    result3 = MassEditAutoFillForOperation(MEGlobalOperationStep.globalOps, ref _autoFillArgsGop, ";", null);
                     ImGui.PopID();
                     if (MassParamEdit.massEditVars.Count != 0)
                     {
@@ -255,7 +255,7 @@ namespace StudioCore.ParamEditor
                             if (inheritedCommand != null)
                                 ImGui.TextColored(AutoFill.PREVIEWCOLOUR, inheritedCommand);
                             ImGui.TextColored(HINTCOLOUR, "Select value operation...");
-                            return MassEditAutoFillForOperation(MEValueOperation.valueOps, ref _autoFillArgsCop, ";", null);
+                            return MassEditAutoFillForOperation(MEValueOperationStep.valueOps, ref _autoFillArgsCop, ";", null);
                         });
                     }
                 }
@@ -272,9 +272,9 @@ namespace StudioCore.ParamEditor
         }
         public static string MassEditOpAutoFill()
         {
-            return MassEditAutoFillForOperation(MEValueOperation.valueOps, ref _autoFillArgsCop, ";", null);
+            return MassEditAutoFillForOperation(MEValueOperationStep.valueOps, ref _autoFillArgsCop, ";", null);
         }
-        private static string MassEditAutoFillForOperation<A, B> (MEOperation<A, B> ops, ref string[] staticArgs, string suffix, Func<string> subMenu)
+        private static string MassEditAutoFillForOperation<A, B> (MEOperationStep<A, B> ops, ref string[] staticArgs, string suffix, Func<string> subMenu)
         {
             int currentArgIndex = 0;
             string result = null;
