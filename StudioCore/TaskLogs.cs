@@ -1,5 +1,5 @@
 ﻿using ImGuiNET;
-using SoapstoneLib;
+//using SoapstoneLib;
 using StudioCore.Editor;
 using StudioCore.Scene;
 using System;

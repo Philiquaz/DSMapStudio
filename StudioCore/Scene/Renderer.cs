@@ -11,7 +11,6 @@ using Veldrid;
 using Veldrid.Sdl2;
 using System.Security.Policy;
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Vortice.Vulkan;
 
 namespace StudioCore.Scene

@@ -13,7 +13,6 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Gtk;
-using SoapstoneLib;
 using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
@@ -37,7 +36,7 @@ namespace StudioCore
         private List<EditorScreen> _editors;
         private EditorScreen _focusedEditor;
 
-        private SoapstoneService _soapstoneService;
+        //private SoapstoneService _soapstoneService;
 
         private AssetLocator _assetLocator;
         private Editor.ProjectSettings _projectSettings = null;
@@ -87,7 +86,7 @@ namespace StudioCore
             };
             _focusedEditor = msbEditor;
 
-            _soapstoneService = new SoapstoneService(_version, _assetLocator, msbEditor);
+            //_soapstoneService = new SoapstoneService(_version, _assetLocator, msbEditor);
 
             _settingsMenu.MsbEditor = msbEditor;
             _settingsMenu.ModelEditor = modelEditor;
@@ -277,7 +276,7 @@ namespace StudioCore
 
             if (CFG.Current.EnableSoapstone)
             {
-                SoapstoneServer.RunAsync(KnownServer.DSMapStudio, _soapstoneService);
+                //SoapstoneServer.RunAsync(KnownServer.DSMapStudio, _soapstoneService);
             }
 
             if (CFG.Current.EnableCheckProgramUpdate)
