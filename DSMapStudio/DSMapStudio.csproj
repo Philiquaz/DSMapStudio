@@ -49,6 +49,7 @@
   <ItemGroup>
     <ProjectReference Include="..\StudioCore\StudioCore.csproj" />
     <ProjectReference Include="..\Veldrid.SDL2\Veldrid.SDL2.csproj" />
+    <ProjectReference Include="..\DSMapStudio_LowRequirements\DSMapStudio_LowRequirements.csproj" />
   </ItemGroup>
 
 </Project>
