@@ -278,20 +278,20 @@ namespace StudioCore.Editor
             ImGui.PopStyleColor();
         }
 
-        public static void VirtualParamRefSelectables(ParamBank bank, string virtualRefName, object searchValue)
+        public static void VirtualParamRefSelectables<C,O,I,F,H>(IDataOwningRoot<C,O,I,F,H> bank, string virtualRefName, object searchValue)
         {
             // Add Goto statements
-            if (bank.Params == null)
+            if (!bank.DataLoaded())
                 return;
-            foreach (var param in bank.Params)
+            foreach (var param in bank.GetPrincipleObjectCategories())
             {
-                foreach (PARAMDEF.Field f in param.Value.AppliedParamdef.Fields)
+                foreach (F f in bank.GetValueIndexArchetypes(param.Item2))
                 {
                     if (FieldMetaData.Get(f).VirtualRef != null && FieldMetaData.Get(f).VirtualRef.Equals(virtualRefName))
                     {
-                        if (ImGui.Selectable($@"Search in {param.Key} ({f.InternalName})"))
+                        if (ImGui.Selectable($@"Search in {param.Item1} ({f.InternalName})"))
                         {
-                            EditorCommandQueue.AddCommand($@"param/select/-1/{param.Key}");
+                            EditorCommandQueue.AddCommand($@"param/select/-1/{param.Item1}");
                             EditorCommandQueue.AddCommand($@"param/search/prop {f.InternalName} ^{searchValue.ToString()}$");
                         }
                     }

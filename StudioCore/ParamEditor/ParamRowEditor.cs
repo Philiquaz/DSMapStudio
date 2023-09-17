@@ -223,6 +223,10 @@ namespace StudioCore.ParamEditor
         }
         private void PropEditorPropRow(ParamBank bank, object oldval, object compareval, object vanillaval, List<object> auxVals, ref int imguiId, string fieldOffset, string internalName, FieldMetaData cellMeta, Type propType, PropertyInfo proprow, Param.Cell? nullableCell, Param.Row row, string activeParam, bool isPinned, Param.Column? col, ParamEditorSelectionState selection)
         {
+            PropEditorPropRow<ParamBank, Param, Param.Row, Param.Column?, Param.Cell?>(bank, oldval, compareval, vanillaval, auxVals, ref imguiId, fieldOffset, internalName, cellMeta, propType, proprow, nullableCell, row, activeParam, isPinned, col, selection);
+        }
+        private void PropEditorPropRow<R,C,O,I,H>(R dataOwningRoot, object oldval, object compareval, object vanillaval, List<object> auxVals, ref int imguiId, string fieldOffset, string internalName, FieldMetaData cellMeta, Type propType, PropertyInfo proprow, H valueHolder, O principleObject, string principleObjectCategory, bool isPinned, I valueIndexer, ParamEditorSelectionState selection) where R : IDataOwningRoot<C,O,I,F,H>
+        {
             string Wiki = cellMeta?.Wiki;
 
             List<ParamRef> RefTypes = cellMeta?.RefTypes;
@@ -253,10 +257,10 @@ namespace StudioCore.ParamEditor
                     ImGui.SameLine();
                 }
                 PropertyRowName(fieldOffset, ref internalName, cellMeta);
-                PropertyRowNameContextMenu(bank, internalName, cellMeta, activeParam, activeParam != null, isPinned, col, selection);
+                PropertyRowNameContextMenu(dataOwningRoot, internalName, cellMeta, principleObjectCategory, principleObjectCategory != null, isPinned, valueIndexer, selection);
 
-                EditorDecorations.ParamRefText(RefTypes, row);
-                EditorDecorations.FmgRefText(FmgRef, row);
+                EditorDecorations.ParamRefText(RefTypes, principleObject);
+                EditorDecorations.FmgRefText(FmgRef, principleObject);
                 EditorDecorations.EnumNameText(Enum == null ? null : Enum.name);
             }
 
@@ -267,7 +271,7 @@ namespace StudioCore.ParamEditor
             int count = diffAuxPrimaryAndVanilla.Where((x)=>x).Count();
             bool conflict = ((diffVanilla ? 1:0) + diffAuxPrimaryAndVanilla.Where((x)=>x).Count()) > 1;
 
-            bool matchDefault = nullableCell?.Def.Default != null && nullableCell.Value.Def.Default.Equals(oldval);
+            bool matchDefault = valueHolder?.Def.Default != null && valueHolder.Value.Def.Default.Equals(oldval);
             bool isRef = (CFG.Current.Param_HideReferenceRows == false && (RefTypes != null || FmgRef != null)) || (CFG.Current.Param_HideEnums == false && Enum != null) || VirtualRef != null || ExtRefs != null;
             
             if (ImGui.TableNextColumn())
@@ -308,18 +312,18 @@ namespace StudioCore.ParamEditor
                     ImGui.SetTooltip(str);
                 }
 
-                PropertyRowValueContextMenu(bank, row, internalName, VirtualRef, ExtRefs, oldval);
+                PropertyRowValueContextMenu(dataOwningRoot, principleObject, internalName, VirtualRef, ExtRefs, oldval);
 
                 if (CFG.Current.Param_HideReferenceRows == false && RefTypes != null)
-                    EditorDecorations.ParamRefsSelectables(bank, RefTypes, row, oldval);
+                    EditorDecorations.ParamRefsSelectables(dataOwningRoot, RefTypes, principleObject, oldval);
                 if (CFG.Current.Param_HideReferenceRows == false && FmgRef != null)
-                    EditorDecorations.FmgRefSelectable(_paramEditor, FmgRef, row, oldval);
+                    EditorDecorations.FmgRefSelectable(_paramEditor, FmgRef, principleObject, oldval);
                 if (CFG.Current.Param_HideEnums == false && Enum != null)
                     EditorDecorations.EnumValueText(Enum.values, oldval.ToString());
 
                 if (CFG.Current.Param_HideReferenceRows == false || CFG.Current.Param_HideEnums == false)
                 {
-                    if (EditorDecorations.ParamRefEnumContextMenu(bank, oldval, ref newval, RefTypes, row, FmgRef, Enum, ContextActionManager))
+                    if (EditorDecorations.ParamRefEnumContextMenu(dataOwningRoot, oldval, ref newval, RefTypes, principleObject, FmgRef, Enum, ContextActionManager))
                     {
                         ParamEditorCommon.SetLastPropertyManual(newval);
                     }
@@ -333,7 +337,7 @@ namespace StudioCore.ParamEditor
                 ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.25f, 0.2f, 0.2f, 1.0f));
             if (CFG.Current.Param_ShowVanillaParams && ImGui.TableNextColumn())
             {
-                AdditionalColumnValue(vanillaval, propType, bank, RefTypes, FmgRef, row, Enum, "vanilla");
+                AdditionalColumnValue(vanillaval, propType, dataOwningRoot, RefTypes, FmgRef, principleObject, Enum, "vanilla");
             }
             for (int i=0; i<auxVals.Count; i++)
             {
@@ -341,7 +345,7 @@ namespace StudioCore.ParamEditor
                 {
                     if (!conflict && diffAuxVanilla[i])
                         ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.2f, 0.2f, 0.35f, 1.0f));
-                        AdditionalColumnValue(auxVals[i], propType, bank, RefTypes, FmgRef, row, Enum, i.ToString());
+                        AdditionalColumnValue(auxVals[i], propType, dataOwningRoot, RefTypes, FmgRef, principleObject, Enum, i.ToString());
                     if (!conflict && diffAuxVanilla[i])
                         ImGui.PopStyleColor();
                 }
@@ -352,15 +356,15 @@ namespace StudioCore.ParamEditor
             {
                 if(diffCompare)
                     ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(0.2f, 0.2f, 0.35f, 1.0f));
-                AdditionalColumnValue(compareval, propType, bank, RefTypes, FmgRef, row, Enum, "compRow");
+                AdditionalColumnValue(compareval, propType, dataOwningRoot, RefTypes, FmgRef, principleObject, Enum, "compRow");
                 if (diffCompare)
                     ImGui.PopStyleColor();
             }
             ImGui.PopStyleColor(2);
 
-            bool committed = ParamEditorCommon.UpdateProperty(ContextActionManager, nullableCell != null ? nullableCell : row, proprow, oldval);
+            bool committed = ParamEditorCommon.UpdateProperty(ContextActionManager, valueHolder != null ? valueHolder : principleObject, proprow, oldval);
             if (committed && !ParamBank.VanillaBank.IsLoadingParams)
-                ParamBank.PrimaryBank.RefreshParamRowDiffs(row, activeParam);
+                ParamBank.PrimaryBank.RefreshParamRowDiffs(principleObject, principleObjectCategory);
             ImGui.PopID();
             imguiId++;
         }
@@ -420,7 +424,7 @@ namespace StudioCore.ParamEditor
             }
         }
 
-        private void PropertyRowNameContextMenu(ParamBank bank, string internalName, FieldMetaData cellMeta, string activeParam, bool showPinOptions, bool isPinned, Param.Column col, ParamEditorSelectionState selection)
+        private void PropertyRowNameContextMenu<C,O,I,F,H>(IDataOwningRoot<C,O,I,F,H> bank, string internalName, FieldMetaData cellMeta, string activeParam, bool showPinOptions, bool isPinned, Param.Column col, ParamEditorSelectionState selection)
         {
             float scale = MapStudioNew.GetUIScale();
             string altName = cellMeta?.AltName;
@@ -462,7 +466,7 @@ namespace StudioCore.ParamEditor
                 {
                     if (ImGui.BeginMenu("Add Reference"))
                     {
-                        foreach (string p in bank.Params.Keys)
+                        foreach ((string p, _) in bank.GetPrincipleObjectCategories())
                         {
                             if (ImGui.MenuItem(p+"##add"+p))
                             {
@@ -498,7 +502,7 @@ namespace StudioCore.ParamEditor
             }
             ImGui.PopStyleVar();
         }
-        private void PropertyRowValueContextMenu(ParamBank bank, Param.Row row, string internalName, string VirtualRef, List<ExtRef> ExtRefs, dynamic oldval)
+        private void PropertyRowValueContextMenu<C,O,I,F,H>(IDataOwningRoot<C,O,I,F,H> bank, Param.Row row, string internalName, string VirtualRef, List<ExtRef> ExtRefs, dynamic oldval)
         {
             if (ImGui.BeginPopupContextItem("quickMEdit"))
             {
@@ -541,12 +545,12 @@ namespace StudioCore.ParamEditor
                 }
                 if (ParamEditorScreen.EditorMode && ImGui.BeginMenu("Find rows with this value..."))
                 {
-                    foreach (KeyValuePair<string, Param> p in bank.Params)
+                    foreach ((string key, C p) in bank.GetPrincipleObjectCategories())
                     {
                         int v = (int)oldval;
-                        Param.Row r = p.Value[v];
-                        if (r != null && ImGui.Selectable($@"{p.Key}: {Utils.ImGuiEscape(r.Name, "null")}"))
-                            EditorCommandQueue.AddCommand($@"param/select/-1/{p.Key}/{v}");
+                        O r = bank.GetPrincipleObject(p, v);
+                        if (r != null && ImGui.Selectable($@"{key}: {Utils.ImGuiEscape(bank.GetObjectName(r), "null")}"))
+                            EditorCommandQueue.AddCommand($@"param/select/-1/{key}/{v}");
                     }
                     ImGui.EndMenu();
                 }

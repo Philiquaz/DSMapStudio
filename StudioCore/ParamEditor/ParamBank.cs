@@ -19,8 +19,41 @@ namespace StudioCore.ParamEditor
     /// <summary>
     /// Utilities for dealing with global params for a game
     /// </summary>
-    public class ParamBank
+    public class ParamBank : IDataOwningRoot<Param, Param.Row, Param.Column?, PARAMDEF.Field, Param.Cell?>
     {
+        public bool DataLoaded()
+        {
+            return Params != null;
+        }
+        public IEnumerable<(string, Param)> GetPrincipleObjectCategories()
+        {
+            return Params.Select((kvp) => (kvp.Key, kvp.Value));
+        }
+        public IEnumerable<Param.Row> GetPrincipleObjects(Param param)
+        {
+            return param.Rows;
+        }
+        public Param.Row GetPrincipleObject(Param categoryObject, object identifier)
+        {
+            return categoryObject[(int)identifier];
+        }
+        public IEnumerable<Param.Column?> GetValueIndexers(Param.Row row)
+        {
+            return row.Columns;
+        }
+        public Param.Cell? GetValueHolder(Param.Row principleObject, Param.Column valueIndexer)
+        {
+            return principleObject[valueIndexer];
+        }
+        public string GetObjectName(Param.Row principleObject)
+        {
+            return principleObject.Name;
+        }
+        public IEnumerable<PARAMDEF.Field> GetValueIndexArchetypes(Param categoryObject)
+        {
+            return categoryObject.AppliedParamdef.Fields;
+        }
+
         public enum RowGetType
         {
             AllRows = 0,
