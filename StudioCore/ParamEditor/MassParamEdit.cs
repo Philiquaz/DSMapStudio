@@ -36,17 +36,24 @@ namespace StudioCore.ParamEditor
 
         internal static object WithDynamicOf(object instance, Func<dynamic, object> dynamicFunc)
         {
+            object result;
             try
             {
-                return Convert.ChangeType(dynamicFunc(instance), instance.GetType());
+                result = dynamicFunc(instance);
             }
             catch
             {
-                // Second try, handle byte[], and casts from numerical values to string which need parsing.
-                object ret = dynamicFunc(instance.ToParamEditorString());
+                result = dynamicFunc(instance.ToParamEditorString());
+            }
+            try
+            {
+                return Convert.ChangeType(result, instance.GetType());
+            }
+            catch
+            {
                 if (instance.GetType() == typeof(byte[]))
-                    ret = ParamUtils.Dummy8Read((string)ret, ((byte[])instance).Length);
-                return Convert.ChangeType(ret, instance.GetType());
+                    return ParamUtils.Dummy8Read(result.ToParamEditorString(), ((byte[])instance).Length);
+                return Convert.ChangeType(Convert.ChangeType(result, typeof(double)), instance.GetType());
             }
         }
 
