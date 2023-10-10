@@ -188,9 +188,9 @@ namespace StudioCore.ParamEditor
             ParamUpgradeEdits = null;
             try
             {
-                string baseDir = AssetLocator.GetUpgraderAssetsDir();
-                string wlFile = Path.Join(AssetLocator.GetUpgraderAssetsDir(), "version.txt");
-                string massEditFile = Path.Join(AssetLocator.GetUpgraderAssetsDir(), "massedit.txt");
+                string baseDir = StudioFileLocator.GetUpgraderAssetsDir();
+                string wlFile = Path.Join(StudioFileLocator.GetUpgraderAssetsDir(), "version.txt");
+                string massEditFile = Path.Join(StudioFileLocator.GetUpgraderAssetsDir(), "massedit.txt");
                 if (!File.Exists(wlFile) || !File.Exists(massEditFile))
                     return;
                 ulong versionWhitelist = ulong.Parse(File.ReadAllText(wlFile).Replace("_", "").Replace("L", ""));
@@ -593,7 +593,7 @@ namespace StudioCore.ParamEditor
                 {
                     if (ImGui.Selectable("Open Scripts Folder"))
                     {
-                        Process.Start("explorer.exe", AssetLocator.GetScriptAssetsDir());
+                        Process.Start("explorer.exe", StudioFileLocator.GetScriptAssetsDir());
                     }
                     if (ImGui.Selectable("Reload Scripts"))
                     {

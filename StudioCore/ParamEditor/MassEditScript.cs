@@ -63,7 +63,7 @@ namespace StudioCore.ParamEditor
 
         public static void ReloadScripts()
         {
-            var dir = ParamBank.PrimaryBank.AssetLocator.GetScriptAssetsDir();
+            var dir = StudioFileLocator.GetScriptAssetsDir();
             try
             {
                 if (Directory.Exists(dir))

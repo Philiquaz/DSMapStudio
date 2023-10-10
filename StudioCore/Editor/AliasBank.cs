@@ -36,7 +36,7 @@ namespace StudioCore.Editor
         private static void LoadMapNames()
         {
             try {
-                var dir = AssetLocator.GetAliasAssetsDir();
+                var dir = StudioFileLocator.GetAliasAssetsDir();
                 string [] mapNames = File.ReadAllLines(dir+"/MapNames.txt");
                 foreach (string pair in mapNames)
                 {

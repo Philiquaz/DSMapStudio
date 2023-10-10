@@ -130,7 +130,7 @@ namespace StudioCore.ParamEditor
         {
             _paramdefs = new Dictionary<string, PARAMDEF>();
             _tentativeParamType = new Dictionary<string, string>();
-            var dir = assetLocator.GetParamdefDir();
+            var dir = StudioFileLocator.GetParamdefDir();
             var files = Directory.GetFiles(dir, "*.xml");
             List<(string, PARAMDEF)> defPairs = new List<(string, PARAMDEF)>();
             foreach (var f in files)
@@ -140,7 +140,7 @@ namespace StudioCore.ParamEditor
                 defPairs.Add((f, pdef));
             }
 
-            var tentativeMappingPath = assetLocator.GetTentativeParamTypePath();
+            var tentativeMappingPath = StudioFileLocator.GetTentativeParamTypePath();
             if (File.Exists(tentativeMappingPath))
             {
                 // No proper CSV library is used currently, and all CSV parsing is in the context of param files.
@@ -161,7 +161,7 @@ namespace StudioCore.ParamEditor
 
         public static void LoadParamMeta(List<(string, PARAMDEF)> defPairs, AssetLocator assetLocator)
         {
-            var mdir = assetLocator.GetParammetaDir();
+            var mdir = StudioFileLocator.GetParammetaDir();
             foreach ((string f, PARAMDEF pdef) in defPairs)
             {
                 var fName = f.Substring(f.LastIndexOf('\\') + 1);
@@ -171,7 +171,7 @@ namespace StudioCore.ParamEditor
 
         public CompoundAction LoadParamDefaultNames(string param = null, bool onlyAffectEmptyNames = false)
         {
-            string dir = AssetLocator.GetParamNamesDir();
+            string dir = StudioFileLocator.GetParamNamesDir();
             string[] files = param == null ? Directory.GetFiles(dir, "*.txt") : new[]
             {
                 Path.Combine(dir, $"{param}.txt"),

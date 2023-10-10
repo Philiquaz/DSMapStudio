@@ -430,7 +430,7 @@ namespace StudioCore.ParamEditor
             {
                 try
                 {
-                    GameOffsets.offsetBank.Add(game, new GameOffsets(game, loc));
+                    GameOffsets.offsetBank.Add(game, new GameOffsets(game));
                 }
                 catch (Exception e)
                 {
@@ -467,9 +467,9 @@ namespace StudioCore.ParamEditor
         internal GameType type;
         internal Dictionary<string, string> coreOffsets;
 
-        internal GameOffsets(GameType type, AssetLocator loc)
+        internal GameOffsets(GameType type)
         {
-            string dir = loc.GetGameOffsetsAssetsDir();
+            string dir = StudioFileLocator.GetGameOffsetsAssetsDir();
             Dictionary<string, string> basicData = getOffsetFile(dir + "/CoreOffsets.txt");
             exeName = basicData["exeName"];
             paramBase = int.Parse(basicData["paramBase"].Substring(2), System.Globalization.NumberStyles.HexNumber);

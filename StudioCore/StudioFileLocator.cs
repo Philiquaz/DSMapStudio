@@ -16,7 +16,7 @@ namespace StudioCore
     public class StudioFileLocator
     {
         /* Instantiate to manage multiple games at once? */
-        public static GameType Type { get; private set; } = GameType.Undefined;
+        public static GameType Type { get; set; } = GameType.Undefined;
         
         public static GameType GetGameTypeForExePath(string exePath)
         {

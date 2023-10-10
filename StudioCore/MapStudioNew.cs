@@ -363,6 +363,7 @@ namespace StudioCore
         private void ChangeProjectSettings(Editor.ProjectSettings newsettings, string moddir, NewProjectOptions options)
         {
             _projectSettings = newsettings;
+            StudioFileLocator.Type = newsettings.GameType;
             _assetLocator.SetFromProjectSettings(newsettings, moddir);
             _settingsMenu.ProjSettings = _projectSettings;
 
@@ -489,7 +490,7 @@ namespace StudioCore
                         out string path))
                     {
                         settings.GameRoot = path;
-                        GameType gametype = _assetLocator.GetGameTypeForExePath(settings.GameRoot);
+                        GameType gametype = StudioFileLocator.GetGameTypeForExePath(settings.GameRoot);
                         if (gametype == settings.GameType)
                         {
                             success = true;
@@ -517,7 +518,7 @@ namespace StudioCore
 
             if (success)
             {
-                if (!_assetLocator.CheckFilesExpanded(settings.GameRoot, settings.GameType))
+                if (!StudioFileLocator.CheckFilesExpanded(settings.GameRoot, settings.GameType))
                 {
                     if (!GameNotUnpackedWarning(settings.GameType))
                         return false;
@@ -979,7 +980,7 @@ namespace StudioCore
                             _newProjectOptions.settings.GameRoot = Path.GetDirectoryName(gname);
                         else
                             _newProjectOptions.settings.GameRoot = gname;
-                        _newProjectOptions.settings.GameType = _assetLocator.GetGameTypeForExePath(gname);
+                        _newProjectOptions.settings.GameType = StudioFileLocator.GetGameTypeForExePath(gname);
 
                         if (_newProjectOptions.settings.GameType == GameType.Bloodborne)
                         {
@@ -995,7 +996,7 @@ namespace StudioCore
                             out string path))
                         {
                             _newProjectOptions.settings.GameRoot = Path.GetDirectoryName(path);
-                            _newProjectOptions.settings.GameType = _assetLocator.GetGameTypeForExePath(path);
+                            _newProjectOptions.settings.GameType = StudioFileLocator.GetGameTypeForExePath(path);
 
                             if (_newProjectOptions.settings.GameType == GameType.Bloodborne)
                             {
@@ -1146,7 +1147,7 @@ namespace StudioCore
                     }
 
                     var gameroot = _newProjectOptions.settings.GameRoot;
-                    if (!_assetLocator.CheckFilesExpanded(gameroot, _newProjectOptions.settings.GameType))
+                    if (!StudioFileLocator.CheckFilesExpanded(gameroot, _newProjectOptions.settings.GameType))
                     {
                         if (!GameNotUnpackedWarning(_newProjectOptions.settings.GameType))
                             validated = false;

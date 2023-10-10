@@ -1066,37 +1066,37 @@ namespace StudioCore.MsbEditor
             var regparamad = _assetLocator.GetDS2GeneratorRegistParam(map.Name);
             var regparamadw = _assetLocator.GetDS2GeneratorRegistParam(map.Name, true);
             var regparam = Param.Read(regparamad.AssetPath);
-            var reglayout = _assetLocator.GetParamdefForParam(regparam.ParamType);
+            var reglayout = StudioFileLocator.GetParamdefForParam(regparam.ParamType);
             regparam.ApplyParamdef(reglayout);
 
             var locparamad = _assetLocator.GetDS2GeneratorLocationParam(map.Name);
             var locparamadw = _assetLocator.GetDS2GeneratorLocationParam(map.Name, true);
             var locparam = Param.Read(locparamad.AssetPath);
-            var loclayout = _assetLocator.GetParamdefForParam(locparam.ParamType);
+            var loclayout = StudioFileLocator.GetParamdefForParam(locparam.ParamType);
             locparam.ApplyParamdef(loclayout);
 
             var genparamad = _assetLocator.GetDS2GeneratorParam(map.Name);
             var genparamadw = _assetLocator.GetDS2GeneratorParam(map.Name, true);
             var genparam = Param.Read(genparamad.AssetPath);
-            var genlayout = _assetLocator.GetParamdefForParam(genparam.ParamType);
+            var genlayout = StudioFileLocator.GetParamdefForParam(genparam.ParamType);
             genparam.ApplyParamdef(genlayout);
 
             var evtparamad = _assetLocator.GetDS2EventParam(map.Name);
             var evtparamadw = _assetLocator.GetDS2EventParam(map.Name, true);
             var evtparam = Param.Read(evtparamad.AssetPath);
-            var evtlayout = _assetLocator.GetParamdefForParam(evtparam.ParamType);
+            var evtlayout = StudioFileLocator.GetParamdefForParam(evtparam.ParamType);
             evtparam.ApplyParamdef(evtlayout);
 
             var evtlparamad = _assetLocator.GetDS2EventLocationParam(map.Name);
             var evtlparamadw = _assetLocator.GetDS2EventLocationParam(map.Name, true);
             var evtlparam = Param.Read(evtlparamad.AssetPath);
-            var evtllayout = _assetLocator.GetParamdefForParam(evtlparam.ParamType);
+            var evtllayout = StudioFileLocator.GetParamdefForParam(evtlparam.ParamType);
             evtlparam.ApplyParamdef(evtllayout);
 
             var objparamad = _assetLocator.GetDS2ObjInstanceParam(map.Name);
             var objparamadw = _assetLocator.GetDS2ObjInstanceParam(map.Name, true);
             var objparam = Param.Read(objparamad.AssetPath);
-            var objlayout = _assetLocator.GetParamdefForParam(objparam.ParamType);
+            var objlayout = StudioFileLocator.GetParamdefForParam(objparam.ParamType);
             objparam.ApplyParamdef(objlayout);
 
             // Clear them out
