@@ -15,9 +15,10 @@ namespace StudioCore
     /// </summary>
     public class StudioFileLocator
     {
-        public GameType Type { get; private set; } = GameType.Undefined;
+        /* Instantiate to manage multiple games at once? */
+        public static GameType Type { get; private set; } = GameType.Undefined;
         
-        public GameType GetGameTypeForExePath(string exePath)
+        public static GameType GetGameTypeForExePath(string exePath)
         {
             GameType type = GameType.Undefined;
             if (exePath.ToLower().Contains("darksouls.exe"))
@@ -63,7 +64,7 @@ namespace StudioCore
             return type;
         }
 
-        public bool CheckFilesExpanded(string gamepath, GameType game)
+        public static bool CheckFilesExpanded(string gamepath, GameType game)
         {
             if (game == GameType.EldenRing)
             {
@@ -104,7 +105,7 @@ namespace StudioCore
             }
             return true;
         }
-        private string GetGameIDForDir()
+        private static string GetGameIDForDir()
         {
             switch (Type)
             {
@@ -130,42 +131,42 @@ namespace StudioCore
                     throw new Exception("Game type not set");
             }
         }
-    	public string GetAliasAssetsDir()
+    	public static string GetAliasAssetsDir()
         {
             return  $@"Assets\Aliases\{GetGameIDForDir()}";
         }
 
-    	public string GetScriptAssetsDir()
+    	public static string GetScriptAssetsDir()
         {
             return  $@"Assets\MassEditScripts\{GetGameIDForDir()}";
         }
 
-    	public string GetUpgraderAssetsDir()
+    	public static string GetUpgraderAssetsDir()
         {
             return  $@"{GetParamAssetsDir()}\Upgrader";
         }
 
-        public string GetGameOffsetsAssetsDir()
+        public static string GetGameOffsetsAssetsDir()
         {
             return  $@"Assets\GameOffsets\{GetGameIDForDir()}";
         }
 
-        public string GetParamAssetsDir()
+        public static string GetParamAssetsDir()
         {
             return  $@"Assets\Paramdex\{GetGameIDForDir()}";
         }
 
-        public string GetParamdefDir()
+        public static string GetParamdefDir()
         {
             return $@"{GetParamAssetsDir()}\Defs";
         }
 
-        public string GetTentativeParamTypePath()
+        public static string GetTentativeParamTypePath()
         {
             return $@"{GetParamAssetsDir()}\Defs\TentativeParamType.csv";
         }
 
-        public ulong[] GetParamdefPatches()
+        public static ulong[] GetParamdefPatches()
         {
             if (Directory.Exists($@"{GetParamAssetsDir()}\DefsPatch"))
             {
@@ -175,22 +176,22 @@ namespace StudioCore
             return new ulong[]  { };
         }
         
-        public string GetParamdefPatchDir(ulong patch)
+        public static string GetParamdefPatchDir(ulong patch)
         {
             return $@"{GetParamAssetsDir()}\DefsPatch\{patch}";
         }
 
-        public string GetParammetaDir()
+        public static string GetParammetaDir()
         {
             return $@"{GetParamAssetsDir()}\Meta";
         }
 
-        public string GetParamNamesDir()
+        public static string GetParamNamesDir()
         {
             return $@"{GetParamAssetsDir()}\Names";
         }
 
-        public PARAMDEF GetParamdefForParam(string paramType)
+        public static PARAMDEF GetParamdefForParam(string paramType)
         {
             PARAMDEF pd = PARAMDEF.XmlDeserialize($@"{GetParamdefDir()}\{paramType}.xml");
             return pd;
