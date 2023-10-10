@@ -5,10 +5,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.IO;
 using StudioCore.Platform;
+using StudioCore.Editor;
 using StudioCore.ParamEditor;
 using System.Linq;
 
-namespace StudioCore.Editor
+namespace StudioCore
 {
 
     public enum ProjectType
@@ -18,7 +19,7 @@ namespace StudioCore.Editor
         /* Virtual Project, such as vanilla folder, lacking json but containing files */
         Folder,
         /* Virtual Project, comprised only of param file (or other specific file if we reach that point) */
-        ParamFile
+        SingleFileRegulation
     }
     
     /// <summary>
@@ -37,8 +38,8 @@ namespace StudioCore.Editor
         /* AssetLocator valid for regular/json and folder type projects */
         public AssetLocator AssetLocator;
 
+        /* Support instanced params for now */
         public ParamBank ParamBank;
-        public ParamEditorScreen ParamEditorScreen;
 
 
         public Project(string folder)
@@ -48,6 +49,16 @@ namespace StudioCore.Editor
 
             AssetLocator = new AssetLocator();
             AssetLocator.SetModProjectDirectory(folder);
+        }
+
+        /* TEMPORARY CONSTRUCTOR */
+        public Project(AssetLocator locator, ProjectSettings settings)
+        {
+            Type = ProjectType.Json;
+            ParentProject = null; // not set to vanilla yet - vanilla project doesn't exist yet
+
+            Settings = settings;
+            AssetLocator = locator;
         }
 
         public Project(string jsonPath, string vanillaFolder, Project parent = null)
@@ -62,7 +73,7 @@ namespace StudioCore.Editor
 
         public Project(string paramFile, Project parent)
         {
-            Type = ProjectType.ParamFile;
+            Type = ProjectType.SingleFileRegulation;
             ParentProject = parent;
 
             AssetLocator = null;
