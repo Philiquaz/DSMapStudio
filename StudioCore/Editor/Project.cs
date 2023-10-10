@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using System.IO;
 using StudioCore.Platform;
 using StudioCore.ParamEditor;
+using System.Linq;
 
 namespace StudioCore.Editor
 {
@@ -26,13 +27,18 @@ namespace StudioCore.Editor
     public class Project
     {
 
+        public static List<Project> LoadedProjects = new();
+
         public ProjectType Type;
         public Project ParentProject;
 
+        /* Settings valid for regular/json type projects */
         public ProjectSettings Settings;
+        /* AssetLocator valid for regular/json and folder type projects */
         public AssetLocator AssetLocator;
 
         public ParamBank ParamBank;
+        public ParamEditorScreen ParamEditorScreen;
 
 
         public Project(string folder)
@@ -49,17 +55,24 @@ namespace StudioCore.Editor
             Type = ProjectType.Json;
             ParentProject = parent ?? new Project(vanillaFolder);
             
+            Settings = ProjectSettings.Deserialize(jsonPath);
             AssetLocator = new AssetLocator();
-            //TODO
-            AssetLocator.SetFromProjectSettings(null, null);
+            AssetLocator.SetFromProjectSettings(Settings, Path.GetDirectoryName(jsonPath));
         }
 
         public Project(string paramFile, Project parent)
         {
             Type = ProjectType.ParamFile;
             ParentProject = parent;
-            
+
             AssetLocator = null;
+        }
+
+        public IEnumerable<Project> GetSiblingProjects()
+        {
+            if (ParentProject == null)
+                return new List<Project>();
+            return LoadedProjects.Where((p) => p.ParentProject == ParentProject && p != this);
         }
     }
 }
