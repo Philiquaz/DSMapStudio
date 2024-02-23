@@ -464,7 +464,19 @@ public class Param : SoulsFile<Param>
         // If a row size is already read it must match our computed row size
         else if (byteOffset != RowSize)
         {
-            throw new Exception($@"Row size paramdef mismatch for {ParamType}");
+
+            //super cursed
+            var newData = new StridedByteArray((uint)Rows.Count, byteOffset, BigEndian);
+            for (var i = 0; i < Rows.Count; i++)
+            {
+                newData.AddZeroedElement();
+                _paramData.CopyData(newData, (uint)i, (uint)i);
+            }
+
+            _paramData = newData;
+            RowSize = (int)byteOffset;
+
+            //throw new Exception($@"Row size paramdef mismatch for {ParamType}");
         }
 
         Columns = columns;
@@ -541,7 +553,7 @@ public class Param : SoulsFile<Param>
             br.AssertPattern(0x14, 0x00);
 
             // ParamType itself will be checked after rows.
-            actualStringsOffset = paramTypeOffset;
+            //actualStringsOffset = paramTypeOffset;
         }
         else
         {
@@ -585,8 +597,8 @@ public class Param : SoulsFile<Param>
 
             if (nameOffset != 0)
             {
-                if (actualStringsOffset == 0 || nameOffset < actualStringsOffset)
-                    actualStringsOffset = nameOffset;
+                //if (actualStringsOffset == 0 || nameOffset < actualStringsOffset)
+                //actualStringsOffset = nameOffset;
 
                 if (Format2E.HasFlag(FormatFlags2.UnicodeRowNames))
                     name = br.GetUTF16(nameOffset);

@@ -1,4 +1,5 @@
 ﻿using Andre.Formats;
+using HKX2;
 using Microsoft.Extensions.Logging;
 using SoulsFormats;
 using StudioCore.Editor;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace StudioCore.ParamEditor;
 
@@ -347,10 +349,61 @@ public class ParamBank
                 p = Param.ReadIgnoreCompression(f.Bytes);
                 if (!_paramdefs.ContainsKey(p.ParamType ?? ""))
                 {
-                    TaskLogs.AddLog(
-                        $"Couldn't find ParamDef for param {paramName} with ParamType \"{p.ParamType}\".",
-                        LogLevel.Warning);
-                    continue;
+                    var newkey = _paramdefs.FirstOrDefault((pd) =>
+                    {
+                        string key = pd.Key.ToLower();
+                        string pn = paramName.ToLower();
+                        if (pn.EndsWith("_npc"))
+                            pn = pn.Substring(0, pn.Length - 4);
+                        else if (pn.EndsWith("_pc"))
+                            pn = pn.Substring(0, pn.Length - 3);
+                        if (pn.EndsWith("_ps4"))
+                            pn = pn.Substring(0, pn.Length - 4);
+                        else if (pn.EndsWith("_xb1"))
+                            pn = pn.Substring(0, pn.Length - 4);
+
+                        if (pn.EndsWith("param"))
+                            pn = pn.Substring(0, pn.Length - 5);
+                        if (pn.EndsWith("spec"))
+                            pn = pn.Substring(0, pn.Length - 4);
+
+                        if (pn.Contains("calccorrect"))
+                            pn = pn.Replace("calc", "cacl");
+                        if (pn.Contains("newmenucolortable"))
+                            pn = pn.Replace("newmenucolortable", "menuparamcolortable");
+                        if (pn.Contains("throw") && !pn.Contains("direction"))
+                            pn = pn.Replace("throw", "throwinfobank");
+                        if (pn.Contains("charainit"))
+                            pn = pn.Replace("charainit", "characterinit");
+                        if (pn.StartsWith("hpestus") || pn.StartsWith("mpestus"))
+                            pn = pn.Substring(2);
+                        if (pn.Contains("multihpestus"))
+                            pn = pn.Replace("multihpestus", "multiestus");
+                        else if (pn.Contains("multimpestus"))
+                            pn = pn.Replace("multimpestus", "multiestus");
+                        if (pn.StartsWith("lod"))
+                            pn = pn.Replace("lod", "lodbank");
+
+                        key = key.Replace("_", "");
+                        if (key.EndsWith("spec"))
+                            key = key.Substring(0, key.Length - 4);
+                        if (key.EndsWith("st"))
+                            key = key.Substring(0, key.Length - 2);
+                        if (key.EndsWith("param"))
+                            key = key.Substring(0, key.Length - 5);
+                        if (key.Equals(pn))
+                            return true;
+                        return false;
+                    }).Key;
+                    if (newkey == null)
+                    {
+                        int i = 7;
+                    }
+                    p.ParamType = newkey;
+                    //TaskLogs.AddLog(
+                    //    $"Couldn't find ParamDef for param {paramName} with ParamType \"{p.ParamType}\".",
+                    //    LogLevel.Warning);
+                    //continue;
                 }
             }
 
@@ -2291,8 +2344,8 @@ public class ParamBank
         if (!File.Exists(oldVanillaParamPath))
         {
             return ParamUpgradeResult.OldRegulationNotFound;
-        }    
-        
+        }
+
         // Backup modded params
         string modRegulationPath = $@"{AssetLocator.GameModDirectory}\regulation.bin";
         File.Copy(modRegulationPath, $@"{modRegulationPath}.upgrade.bak", true);
