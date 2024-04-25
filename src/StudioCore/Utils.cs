@@ -853,7 +853,7 @@ public static class Utils
 
         int index = Array.IndexOf(enumVals, oldval);
 
-        if (ImGui.Combo("##", ref index, enumNames, enumNames.Length))
+        if (index != -1 && ImGui.Combo("##", ref index, enumNames, enumNames.Length))
         {
             val = enumVals.GetValue(index);
             return true;

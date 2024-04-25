@@ -26,6 +26,9 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Veldrid;
 using Veldrid.Sdl2;
+using HKLib.Serialization.hk2018.Binary;
+
+using HKLib.hk2018;
 
 namespace StudioCore;
 
@@ -1346,6 +1349,21 @@ public class MapStudioNew
                 ImGui.End();
             }
         }
+        ImGui.Begin("hackWindow");
+        if(ImGui.Button("open file"))
+        {
+            var reader = new HavokBinarySerializer();
+            if (PlatformUtils.Instance.OpenFileDialog(".hkx file", ["hkx"], out string path))
+            {
+                havokObject = reader.Read(path);
+                havokpropEditor = new HavokPropertyEditor(new MsbEditor.ActionManager(), new());
+            }
+        }
+        if (havokpropEditor != null)
+        {
+            havokpropEditor.OnGui(havokObject, "haha", -1, -1);
+        }
+        ImGui.End();
 
         // Global shortcut keys
         if (!_focusedEditor.InputCaptured())
@@ -1389,6 +1407,8 @@ public class MapStudioNew
 
         _firstframe = false;
     }
+    private static IHavokObject havokObject;
+    private static HavokPropertyEditor havokpropEditor;
 
     public void SettingsGUI()
     {
