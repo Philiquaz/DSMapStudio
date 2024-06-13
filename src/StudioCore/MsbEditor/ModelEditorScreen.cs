@@ -242,7 +242,7 @@ public class ModelEditorScreen : EditorScreen, AssetBrowserEventHandler, SceneTr
     {
         if (AssetLocator.Type != GameType.Undefined)
         {
-            ModelAssetBrowser.OnProjectChanged();
+            //ModelAssetBrowser.OnProjectChanged();
         }
     }
 

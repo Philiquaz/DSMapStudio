@@ -1290,7 +1290,7 @@ public class MsbEditorScreen : EditorScreen, SceneTreeEventHandler
 
         if (Locator.AssetLocator.Type != GameType.Undefined)
         {
-            MapAssetBrowser.OnProjectChanged();
+            //MapAssetBrowser.OnProjectChanged();
         }
 
         ReloadUniverse();
