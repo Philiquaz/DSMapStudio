@@ -146,6 +146,35 @@ public class ProjectAssetLocator
             return files;
         }
     }
+    public IDictionary<string, T> GetAllMergedAssets<T>(string relpath, string[] extensionPatterns, Func<string, T> fileOpener, Func<T, T, T> fileMerger, bool subDirectories = false)
+    {
+        Dictionary<string, T> files = new();
+        string rpath = $@"{RootDirectory}\{relpath}";
+        if (Directory.Exists(rpath))
+        {
+            foreach (string pattern in extensionPatterns)
+            {
+                var rawfiles = Directory.GetFiles(rpath, pattern, subDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                foreach (string f in rawfiles)
+                {
+                    string rel = Path.GetRelativePath(rpath, f);
+                    files[rel] = fileOpener(f);
+                }
+            }
+        }
+        if (ParentAssetLocator != null)
+        {
+            var parents = ParentAssetLocator.GetAllMergedAssets(relpath, extensionPatterns, fileOpener, fileMerger, subDirectories);
+            foreach ((string rel, T o) in parents)
+            {
+                if (files.TryGetValue(rel, out T value))
+                    files[rel] = fileMerger(value, o);
+                else
+                    files[rel] = o;
+            }
+        }
+        return files;
+    }
     public IEnumerable<string> GetAllProjectFiles(string relpath, string[] extensionPatterns, bool distinct = true, bool subDirectories = false)
     {
         List<string> files = new();
@@ -180,6 +209,50 @@ public class ProjectAssetLocator
         {
             return files;
         }
+    }
+    public IDictionary<string, T> GetAllMergedProjectFiles<T>(string relpath, string[] extensionPatterns, Func<string, T> fileOpener, Func<T, T, T> fileMerger, bool subDirectories = false)
+    {
+        Dictionary<string, T> files = new();
+        string rpath;
+        if (ParentAssetLocator == null)
+        {
+            rpath = $@"Assets\{relpath}";
+            foreach (string pattern in extensionPatterns)
+            {
+                var rawfiles = Directory.GetFiles(rpath, pattern, subDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                foreach (string f in rawfiles)
+                {
+                    string rel = Path.GetRelativePath(rpath, f);
+                    files[rel] = fileOpener(f);
+                }
+            }
+            return files;
+        }
+        rpath = $@"{RootDirectory}\{ProjectMiscDir}\{relpath}";
+        if (Directory.Exists(rpath))
+        {
+            foreach (string pattern in extensionPatterns)
+            {
+                var rawfiles = Directory.GetFiles(rpath, pattern, subDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+                foreach (string f in rawfiles)
+                {
+                    string rel = Path.GetRelativePath(rpath, f);
+                    files[rel] = fileOpener(f);
+                }
+            }
+        }
+        if (ParentAssetLocator != null)
+        {
+            var parents = ParentAssetLocator.GetAllMergedProjectFiles(relpath, extensionPatterns, fileOpener, fileMerger, subDirectories);
+            foreach ((string rel, T o) in parents)
+            {
+                if (files.TryGetValue(rel, out T value))
+                    files[rel] = fileMerger(value, o);
+                else
+                    files[rel] = o;
+            }
+        }
+        return files;
     }
     public IEnumerable<string> GetAllSubDirs(string relpath, bool distinct = true, bool subDirectories = false)
     {
